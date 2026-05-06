@@ -1,0 +1,42 @@
+{
+  "name": "nextjs-template-base",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Base configurable para nuevos proyectos Next.js con Husky, Prettier, ESLint y Commitlint.",
+  "scripts": {
+    "check-secrets": "node scripts/check-secrets.js",
+    "prepare": "node scripts/prepare.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "pnpm exec prettier --write",
+      "pnpm exec eslint --fix"
+    ],
+    "*.{json,md,yml,yaml,css,scss}": [
+      "pnpm exec prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.1",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.38",
+    "autoprefixer": "^10.4.19",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/bcryptjs": "^2.4.6",
+    "zod": "^3.23.8"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

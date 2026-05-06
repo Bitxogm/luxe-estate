@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Format and lint staged files
+pnpm lint-staged || exit 1
+
+# Check secrets
+node scripts/check-secrets.js
