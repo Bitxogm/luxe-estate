@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 // GET /api/properties/[id] - Obtiene una propiedad por ID
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const property = await prisma.property.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!property) {
@@ -20,12 +21,13 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // PATCH /api/properties/[id] - Actualiza una propiedad
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     const property = await prisma.property.update({
-      where: { id: params.id },
+      where: { id },
       data: body,
     });
 
@@ -37,10 +39,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE /api/properties/[id] - Elimina una propiedad
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     await prisma.property.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return new NextResponse(null, { status: 204 });
