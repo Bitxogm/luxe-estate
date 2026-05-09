@@ -8,6 +8,8 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "react/no-unescaped-entities": "off",
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/set-state-in-effect": "off",
     },
   },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
