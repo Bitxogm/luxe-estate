@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Load nvm if it exists to fix GUI commit issues
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # Format and lint staged files
 pnpm lint-staged || exit 1
 
