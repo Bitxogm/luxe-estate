@@ -183,7 +183,7 @@ export const newInMarketProperties: Property[] = [
     sqm: 300,
     type: "Penthouse",
     status: "FOR RENT",
-    imageUrl: "https://images.unsplash.com/photo-1600566753086-00f18efc2291?w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80",
     imageAlt: "Luxurious penthouse with city view",
   },
   {
