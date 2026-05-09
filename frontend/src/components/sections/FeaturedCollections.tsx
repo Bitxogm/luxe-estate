@@ -7,14 +7,16 @@ export default function FeaturedCollections() {
     <section className="mb-16">
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <h2 className="text-nordic font-sf text-2xl font-light">Featured Collections</h2>
-          <p className="text-nordic-muted mt-1 text-sm">
+          <h2 className="text-nordic dark:text-clear-day font-sf text-2xl font-light transition-colors">
+            Featured Collections
+          </h2>
+          <p className="text-nordic-muted dark:text-clear-day/70 mt-1 text-sm transition-colors">
             Curated properties for the discerning eye.
           </p>
         </div>
         <a
           href="#"
-          className="text-mosque hidden items-center gap-1 text-sm font-medium transition-opacity hover:opacity-70 sm:flex"
+          className="text-mosque dark:text-hint-green hidden items-center gap-1 text-sm font-medium transition-all hover:opacity-70 sm:flex"
         >
           View all <ArrowRight size={16} />
         </a>
