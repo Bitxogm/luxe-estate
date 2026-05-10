@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const propertyIdSchema = z
+  .string()
+  .regex(/^[a-z0-9]+$/, "ID inválido")
+  .min(1)
+  .max(64);
+
 export const propertyFiltersSchema = z.object({
   priceType: z.enum(["sale", "rent"]).optional(),
   type: z.enum(["House", "Apartment", "Villa", "Penthouse"]).optional(),
