@@ -90,6 +90,16 @@ const BINARY_EXTENSIONS = new Set([
   ".avi",
 ]);
 
+// ── Líneas a ignorar (falsos positivos conocidos) ───────────
+const IGNORED_LINE_PATTERNS = [
+  /type=["']password["']/, // HTML input type attribute
+  /autoComplete=["'][^"']*password[^"']*["']/, // HTML autocomplete attribute
+  /htmlFor=["']password["']/, // HTML label for attribute
+  /id=["']password["']/, // HTML input id attribute
+  /name=["']password["']/, // HTML input name attribute
+  /placeholder=["'][^"']*["']/, // placeholder text
+];
+
 // ── Archivos a ignorar por patrón de nombre ─────────────────
 const IGNORED_FILE_PATTERNS = [
   /\.example$/,
@@ -163,6 +173,7 @@ async function main() {
       if (COMMENT_PATTERN.test(line)) return;
       if (!keywordRegex.test(line)) return;
       if (!VALUE_PATTERN.test(line)) return;
+      if (IGNORED_LINE_PATTERNS.some((p) => p.test(line))) return;
 
       findings.push({
         file: normalizedFile,

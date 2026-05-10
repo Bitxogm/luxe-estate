@@ -1,0 +1,79 @@
+import type { Property } from "@prisma/client";
+import { Bath, BedDouble, Ruler, Heart } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+interface PropertyCardProps {
+  property: Property;
+}
+
+export default function PropertyCard({ property }: PropertyCardProps) {
+  const isRent = property.priceType === "rent";
+
+  const formattedPrice = isRent
+    ? `$${property.price.toLocaleString("en-US")}`
+    : new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(property.price);
+
+  return (
+    <Link href={`/properties/${property.id}`} className="block h-full">
+      <article className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl bg-white shadow-card transition-all duration-300 hover:shadow-soft dark:border dark:border-white/5 dark:bg-nordic-muted/10">
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <Image
+            src={property.imageUrl}
+            alt={property.imageAlt}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+          <button className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-nordic transition-colors hover:bg-mosque hover:text-white dark:bg-black/50 dark:text-white">
+            <Heart size={18} />
+          </button>
+          <div
+            className={`absolute bottom-3 left-3 rounded px-2 py-1 text-xs font-bold text-white ${
+              property.status === "FOR RENT" ? "bg-mosque/90" : "bg-nordic/90"
+            }`}
+          >
+            {property.status}
+          </div>
+        </div>
+
+        <div className="flex flex-grow flex-col p-4">
+          <div className="mb-2 flex items-baseline justify-between">
+            <h3 className="text-lg font-bold text-nordic dark:text-clear-day">
+              {formattedPrice}
+              {isRent && (
+                <span className="text-sm font-normal text-nordic-muted dark:text-clear-day/70">
+                  /mo
+                </span>
+              )}
+            </h3>
+          </div>
+          <h4 className="mb-1 truncate font-medium text-nordic dark:text-clear-day">
+            {property.title}
+          </h4>
+          <p className="mb-4 text-xs text-nordic-muted dark:text-clear-day/70">
+            {property.address}
+          </p>
+
+          <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/10">
+            <div className="flex items-center gap-1 text-xs text-nordic-muted dark:text-clear-day/70">
+              <BedDouble size={14} className="text-mosque/80 dark:text-hint-green/80" />{" "}
+              {property.beds}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-nordic-muted dark:text-clear-day/70">
+              <Bath size={14} className="text-mosque/80 dark:text-hint-green/80" /> {property.baths}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-nordic-muted dark:text-clear-day/70">
+              <Ruler size={14} className="text-mosque/80 dark:text-hint-green/80" /> {property.sqm}
+              m²
+            </div>
+          </div>
+        </div>
+      </article>
+    </Link>
+  );
+}
