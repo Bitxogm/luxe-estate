@@ -1,8 +1,10 @@
-import { featuredProperties } from "@/lib/mockData";
+import { getFeaturedProperties } from "@/server/services/property.service";
 import FeaturedPropertyCard from "@/components/ui/FeaturedPropertyCard";
 import { ArrowRight } from "lucide-react";
 
-export default function FeaturedCollections() {
+export default async function FeaturedCollections() {
+  const properties = await getFeaturedProperties();
+
   return (
     <section className="mb-16">
       <div className="mb-8 flex items-end justify-between">
@@ -23,7 +25,7 @@ export default function FeaturedCollections() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {featuredProperties.map((property) => (
+        {properties.map((property) => (
           <FeaturedPropertyCard key={property.id} property={property} />
         ))}
       </div>

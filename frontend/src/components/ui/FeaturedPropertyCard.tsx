@@ -1,9 +1,9 @@
-import type { FeaturedProperty } from "@/types/property";
+import type { Property } from "@prisma/client";
 import { Bath, BedDouble, MapPin, Heart, Ruler } from "lucide-react";
 import Image from "next/image";
 
 interface FeaturedPropertyCardProps {
-  property: FeaturedProperty;
+  property: Property;
 }
 
 export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardProps) {

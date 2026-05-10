@@ -1,4 +1,4 @@
-import type { Property } from "@/types/property";
+import type { Property } from "@prisma/client";
 import { Bath, BedDouble, Ruler, Heart } from "lucide-react";
 import Image from "next/image";
 
