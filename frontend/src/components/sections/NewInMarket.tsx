@@ -36,19 +36,41 @@ export default async function NewInMarket({ priceType, page = 1 }: NewInMarketPr
 
       {meta.totalPages > 1 && (
         <div className="mt-12 flex items-center justify-center space-x-2">
-          {Array.from({ length: meta.totalPages }).map((_, i) => (
-            <a
-              key={i}
-              href={`?page=${i + 1}${priceType ? `&priceType=${priceType}` : ""}`}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                meta.page === i + 1
-                  ? "bg-mosque dark:bg-hint-green dark:text-mosque text-white shadow-md"
-                  : "border-nordic/10 text-nordic dark:text-clear-day hover:bg-nordic/5 border dark:border-white/10 dark:hover:bg-white/5"
-              }`}
-            >
-              {i + 1}
-            </a>
-          ))}
+          <a
+            href={`?page=${meta.page - 1}${priceType ? `&priceType=${priceType}` : ""}`}
+            aria-disabled={meta.page === 1}
+            className={`border-nordic/10 text-nordic dark:text-clear-day hover:bg-nordic/5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors dark:border-white/10 dark:hover:bg-white/5 ${
+              meta.page === 1 ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            Previous
+          </a>
+
+          <div className="hidden space-x-2 sm:flex">
+            {Array.from({ length: meta.totalPages }).map((_, i) => (
+              <a
+                key={i}
+                href={`?page=${i + 1}${priceType ? `&priceType=${priceType}` : ""}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                  meta.page === i + 1
+                    ? "bg-mosque dark:bg-hint-green dark:text-mosque text-white shadow-md"
+                    : "border-nordic/10 text-nordic dark:text-clear-day hover:bg-nordic/5 border dark:border-white/10 dark:hover:bg-white/5"
+                }`}
+              >
+                {i + 1}
+              </a>
+            ))}
+          </div>
+
+          <a
+            href={`?page=${meta.page + 1}${priceType ? `&priceType=${priceType}` : ""}`}
+            aria-disabled={meta.page === meta.totalPages}
+            className={`border-nordic/10 text-nordic dark:text-clear-day hover:bg-nordic/5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors dark:border-white/10 dark:hover:bg-white/5 ${
+              meta.page === meta.totalPages ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            Next
+          </a>
         </div>
       )}
     </section>
