@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 
-const PROTECTED_ROUTES = ["/dashboard", "/properties/new", "/profile"];
+const PROTECTED_ROUTES = ["/dashboard", "/properties/new", "/profile", "/favorites"];
 
 export const authConfig: NextAuthConfig = {
   pages: {

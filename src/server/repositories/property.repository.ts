@@ -3,11 +3,24 @@ import { prisma } from "@/lib/prisma";
 import type { PropertyFilters } from "@/server/validations/property.schema";
 
 function buildWhere(filters: Omit<PropertyFilters, "page" | "limit">) {
+  const priceFilter =
+    filters.minPrice !== undefined || filters.maxPrice !== undefined
+      ? {
+          price: {
+            ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
+            ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
+          },
+        }
+      : {};
+
   return {
     ...(filters.priceType && { priceType: filters.priceType }),
     ...(filters.type && { type: filters.type }),
     ...(filters.city && { city: { contains: filters.city, mode: "insensitive" as const } }),
     ...(filters.featured !== undefined && { isFeatured: filters.featured }),
+    ...priceFilter,
+    ...(filters.minBeds !== undefined && { beds: { gte: filters.minBeds } }),
+    ...(filters.minBaths !== undefined && { baths: { gte: filters.minBaths } }),
   };
 }
 
@@ -40,6 +53,10 @@ export async function findPropertyById(id: string) {
   return prisma.property.findUnique({ where: { id } });
 }
 
+export async function findPropertyBySlug(slug: string) {
+  return prisma.property.findUnique({ where: { slug } });
+}
+
 export async function createProperty(data: Parameters<typeof prisma.property.create>[0]["data"]) {
   return prisma.property.create({ data });
 }
@@ -53,4 +70,40 @@ export async function updateProperty(
 
 export async function deleteProperty(id: string) {
   return prisma.property.delete({ where: { id } });
+}
+
+export async function getSavedPropertyIds(userId: string): Promise<Set<string>> {
+  const saved = await prisma.savedProperty.findMany({
+    where: { userId },
+    select: { propertyId: true },
+  });
+  return new Set(saved.map((s) => s.propertyId));
+}
+
+export async function toggleSavedProperty(
+  userId: string,
+  propertyId: string
+): Promise<{ saved: boolean }> {
+  const existing = await prisma.savedProperty.findUnique({
+    where: { userId_propertyId: { userId, propertyId } },
+  });
+
+  if (existing) {
+    await prisma.savedProperty.delete({
+      where: { userId_propertyId: { userId, propertyId } },
+    });
+    return { saved: false };
+  }
+
+  await prisma.savedProperty.create({ data: { userId, propertyId } });
+  return { saved: true };
+}
+
+export async function findSavedProperties(userId: string) {
+  const saved = await prisma.savedProperty.findMany({
+    where: { userId },
+    include: { property: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return saved.map((s) => s.property);
 }

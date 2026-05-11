@@ -101,7 +101,7 @@ export default function PropertyDetail({ property }: PropertyDetailProps) {
           </div>
 
           {/* CTA */}
-          <PropertyActions isRent={isRent} propertyTitle={property.title} />
+          <PropertyActions isRent={isRent} propertySlug={property.slug} />
         </div>
       </div>
     </div>

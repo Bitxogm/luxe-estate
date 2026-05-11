@@ -6,16 +6,31 @@ export const propertyIdSchema = z
   .min(1)
   .max(64);
 
+export const propertySlugSchema = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug inválido")
+  .min(1)
+  .max(200);
+
 export const propertyFiltersSchema = z.object({
   priceType: z.enum(["sale", "rent"]).optional(),
   type: z.enum(["House", "Apartment", "Villa", "Penthouse"]).optional(),
   city: z.string().min(1).max(100).optional(),
   featured: z.boolean().optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  minBeds: z.coerce.number().int().min(0).optional(),
+  minBaths: z.coerce.number().min(0).optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(50).default(8),
 });
 
 export const createPropertySchema = z.object({
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .min(1)
+    .max(200),
   title: z.string().min(1).max(200),
   address: z.string().min(1).max(300),
   city: z.string().min(1).max(100),

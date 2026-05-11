@@ -8,11 +8,20 @@ const VALID_TYPES = ["House", "Apartment", "Villa", "Penthouse"] as const;
 type PropertyType = (typeof VALID_TYPES)[number];
 
 interface HomeProps {
-  searchParams: Promise<{ page?: string; priceType?: string; type?: string; city?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    priceType?: string;
+    type?: string;
+    city?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    minBeds?: string;
+    minBaths?: string;
+  }>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { page, priceType, type, city } = await searchParams;
+  const { page, priceType, type, city, minPrice, maxPrice, minBeds, minBaths } = await searchParams;
 
   const resolvedType = VALID_TYPES.includes(type as PropertyType)
     ? (type as PropertyType)
@@ -30,6 +39,10 @@ export default async function Home({ searchParams }: HomeProps) {
             priceType={priceType === "sale" || priceType === "rent" ? priceType : undefined}
             type={resolvedType}
             city={city}
+            minPrice={minPrice ? Number(minPrice) : undefined}
+            maxPrice={maxPrice ? Number(maxPrice) : undefined}
+            minBeds={minBeds ? Number(minBeds) : undefined}
+            minBaths={minBaths ? Number(minBaths) : undefined}
           />
         </Suspense>
       </main>

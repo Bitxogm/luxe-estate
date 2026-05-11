@@ -1,9 +1,17 @@
 import { getFeaturedProperties } from "@/server/services/property.service";
+import { auth } from "@/auth";
+import * as repo from "@/server/repositories/property.repository";
 import FeaturedPropertyCard from "@/components/ui/FeaturedPropertyCard";
 import { ArrowRight } from "lucide-react";
 
 export default async function FeaturedCollections() {
-  const properties = await getFeaturedProperties();
+  const session = await auth();
+  const [properties, savedIds] = await Promise.all([
+    getFeaturedProperties(),
+    session?.user?.id
+      ? repo.getSavedPropertyIds(session.user.id)
+      : Promise.resolve(new Set<string>()),
+  ]);
 
   return (
     <section className="mb-16">
@@ -26,7 +34,11 @@ export default async function FeaturedCollections() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {properties.map((property) => (
-          <FeaturedPropertyCard key={property.id} property={property} />
+          <FeaturedPropertyCard
+            key={property.id}
+            property={property}
+            isSaved={savedIds.has(property.id)}
+          />
         ))}
       </div>
     </section>

@@ -1,22 +1,22 @@
 import { notFound } from "next/navigation";
-import { getPropertyById } from "@/server/services/property.service";
+import { getPropertyBySlug } from "@/server/services/property.service";
 import Navbar from "@/components/sections/Navbar";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import type { Metadata } from "next";
 import { ZodError } from "zod";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const { id } = await params;
-    const property = await getPropertyById(id);
-    if (!property) return { title: "Propiedad no encontrada — Luxe Estate" };
+    const { slug } = await params;
+    const property = await getPropertyBySlug(slug);
+    if (!property) return { title: "Property not found — Luxe Estate" };
     return {
       title: `${property.title} — Luxe Estate`,
-      description: `${property.type} en ${property.city}. ${property.beds} beds · ${property.baths} baths · ${property.sqm} m²`,
+      description: `${property.type} in ${property.city}. ${property.beds} beds · ${property.baths} baths · ${property.sqm} m²`,
     };
   } catch {
     return { title: "Luxe Estate" };
@@ -27,8 +27,8 @@ export default async function PropertyPage({ params }: Props) {
   let property;
 
   try {
-    const { id } = await params;
-    property = await getPropertyById(id);
+    const { slug } = await params;
+    property = await getPropertyBySlug(slug);
   } catch (error) {
     if (error instanceof ZodError) notFound();
     throw error;

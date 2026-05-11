@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
+import { generateUniqueSlug } from "../src/lib/slug";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -284,7 +285,15 @@ const properties = [
 
 async function main() {
   await prisma.property.deleteMany();
-  await prisma.property.createMany({ data: properties });
+
+  const usedSlugs = new Set<string>();
+  const propertiesWithSlugs = properties.map((p) => {
+    const slug = generateUniqueSlug(p.title, usedSlugs);
+    usedSlugs.add(slug);
+    return { ...p, slug };
+  });
+
+  await prisma.property.createMany({ data: propertiesWithSlugs });
   console.log(`Seeded ${properties.length} properties.`);
 
   await prisma.user.deleteMany();

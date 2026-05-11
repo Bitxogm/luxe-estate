@@ -22,9 +22,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  properties    Property[]
+  accounts        Account[]
+  sessions        Session[]
+  properties      Property[]
+  savedProperties SavedProperty[]
+  visits          Visit[]
 }
 
 model Account {
@@ -65,24 +67,52 @@ model VerificationToken {
 
 model Property {
   id          String   @id @default(cuid())
+  slug        String   @unique
   title       String
   address     String
   city        String
   price       Float
-  priceType   String   // "sale" or "rent"
+  priceType   String
   beds        Int
   baths       Float
   sqm         Float
-  type        String   // "House", "Apartment", "Villa", "Penthouse"
-  status      String   // "FOR SALE", "FOR RENT"
-  badge       String?  // "Exclusive", "New Arrival", etc.
+  type        String
+  status      String
+  badge       String?
   imageUrl    String
   imageAlt    String
   isFeatured  Boolean  @default(false)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
+  user        User?         @relation(fields: [userId], references: [id])
+  savedBy     SavedProperty[]
+  visits      Visit[]
+}
+
+model SavedProperty {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+}
+
+model Visit {
+  id          String   @id @default(cuid())
+  userId      String
+  propertyId  String
+  scheduledAt DateTime
+  message     String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }

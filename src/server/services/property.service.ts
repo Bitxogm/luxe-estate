@@ -2,6 +2,7 @@ import "server-only";
 import * as repo from "@/server/repositories/property.repository";
 import {
   propertyIdSchema,
+  propertySlugSchema,
   propertyFiltersSchema,
   createPropertySchema,
   updatePropertySchema,
@@ -35,6 +36,11 @@ export async function getFeaturedProperties(): Promise<Property[]> {
 export async function getPropertyById(id: string): Promise<Property | null> {
   propertyIdSchema.parse(id);
   return repo.findPropertyById(id);
+}
+
+export async function getPropertyBySlug(slug: string): Promise<Property | null> {
+  propertySlugSchema.parse(slug);
+  return repo.findPropertyBySlug(slug);
 }
 
 export async function createProperty(input: CreatePropertyInput): Promise<Property> {

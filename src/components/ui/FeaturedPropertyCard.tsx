@@ -1,13 +1,18 @@
 import type { Property } from "@prisma/client";
-import { Bath, BedDouble, MapPin, Heart, Ruler } from "lucide-react";
+import { Bath, BedDouble, MapPin, Ruler } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import SaveButton from "@/components/ui/SaveButton";
 
 interface FeaturedPropertyCardProps {
   property: Property;
+  isSaved?: boolean;
 }
 
-export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardProps) {
+export default function FeaturedPropertyCard({
+  property,
+  isSaved = false,
+}: FeaturedPropertyCardProps) {
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -15,7 +20,7 @@ export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardP
   }).format(property.price);
 
   return (
-    <Link href={`/properties/${property.id}`} className="block">
+    <Link href={`/properties/${property.slug}`} className="block">
       <div className="group relative cursor-pointer overflow-hidden rounded-xl bg-white shadow-soft transition-colors dark:border dark:border-white/5 dark:bg-nordic-muted/10">
         <div className="relative aspect-[4/3] w-full overflow-hidden">
           <Image
@@ -28,9 +33,11 @@ export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardP
           <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-nordic backdrop-blur-sm">
             {property.badge}
           </div>
-          <button className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-nordic backdrop-blur-sm transition-all hover:bg-mosque hover:text-white dark:bg-black/50 dark:text-white">
-            <Heart size={18} />
-          </button>
+          <SaveButton
+            propertyId={property.id}
+            initialSaved={isSaved}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-nordic backdrop-blur-sm transition-all hover:bg-mosque hover:text-white dark:bg-black/50 dark:text-white"
+          />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
         </div>
 

@@ -1,41 +1,23 @@
 "use client";
 
-import { Tag } from "lucide-react";
-import { notify } from "@/lib/toast";
+import Link from "next/link";
+import { Calendar } from "lucide-react";
 
 interface PropertyActionsProps {
   isRent: boolean;
-  propertyTitle: string;
+  propertySlug: string;
 }
 
-export default function PropertyActions({ isRent, propertyTitle }: PropertyActionsProps) {
-  function handleEnquiry() {
-    notify.info(
-      isRent
-        ? "Viewing request sent. We'll contact you shortly."
-        : "Enquiry sent. An agent will reach out within 24h."
-    );
-  }
-
-  function handleSave() {
-    notify.success(`"${propertyTitle}" saved to your favourites.`);
-  }
-
+export default function PropertyActions({ isRent, propertySlug }: PropertyActionsProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
-      <button
-        onClick={handleEnquiry}
-        className="flex-1 rounded-xl bg-mosque px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-mosque/90"
+      <Link
+        href={`/properties/${propertySlug}/schedule`}
+        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-mosque px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-mosque/90 dark:bg-hint-green dark:text-nordic dark:hover:bg-hint-green/90"
       >
-        {isRent ? "Request a viewing" : "Make an enquiry"}
-      </button>
-      <button
-        onClick={handleSave}
-        className="flex-1 rounded-xl border border-nordic/20 px-6 py-3.5 text-sm font-semibold text-nordic transition-colors hover:bg-nordic/5 dark:border-white/10 dark:text-clear-day dark:hover:bg-white/5"
-      >
-        <Tag size={15} className="mr-2 inline" />
-        Save property
-      </button>
+        <Calendar size={16} />
+        {isRent ? "Schedule a viewing" : "Schedule a visit"}
+      </Link>
     </div>
   );
 }

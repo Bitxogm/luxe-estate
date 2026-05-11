@@ -1,13 +1,15 @@
 import type { Property } from "@prisma/client";
-import { Bath, BedDouble, Ruler, Heart } from "lucide-react";
+import { Bath, BedDouble, Ruler } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import SaveButton from "@/components/ui/SaveButton";
 
 interface PropertyCardProps {
   property: Property;
+  isSaved?: boolean;
 }
 
-export default function PropertyCard({ property }: PropertyCardProps) {
+export default function PropertyCard({ property, isSaved = false }: PropertyCardProps) {
   const isRent = property.priceType === "rent";
 
   const formattedPrice = isRent
@@ -19,7 +21,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
       }).format(property.price);
 
   return (
-    <Link href={`/properties/${property.id}`} className="block h-full">
+    <Link href={`/properties/${property.slug}`} className="block h-full">
       <article className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl bg-white shadow-card transition-all duration-300 hover:shadow-soft dark:border dark:border-white/5 dark:bg-nordic-muted/10">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
@@ -29,9 +31,11 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
-          <button className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-nordic transition-colors hover:bg-mosque hover:text-white dark:bg-black/50 dark:text-white">
-            <Heart size={18} />
-          </button>
+          <SaveButton
+            propertyId={property.id}
+            initialSaved={isSaved}
+            className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-nordic transition-colors hover:bg-mosque hover:text-white dark:bg-black/50 dark:text-white"
+          />
           <div
             className={`absolute bottom-3 left-3 rounded px-2 py-1 text-xs font-bold text-white ${
               property.status === "FOR RENT" ? "bg-mosque/90" : "bg-nordic/90"
