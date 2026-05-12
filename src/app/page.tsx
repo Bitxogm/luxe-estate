@@ -31,7 +31,9 @@ export default async function Home({ searchParams }: HomeProps) {
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <HeroSearch />
+        <Suspense fallback={null}>
+          <HeroSearch />
+        </Suspense>
         <FeaturedCollections />
         <Suspense fallback={null}>
           <NewInMarket

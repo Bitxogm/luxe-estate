@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPropertyBySlug } from "@/server/services/property.service";
+import { auth } from "@/auth";
 import Navbar from "@/components/sections/Navbar";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import type { Metadata } from "next";
@@ -36,11 +37,15 @@ export default async function PropertyPage({ params }: Props) {
 
   if (!property) notFound();
 
+  const session = await auth();
+  const isOwner =
+    !!session?.user?.id && (session.user.id === property.userId || session.user.role === "admin");
+
   return (
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <PropertyDetail property={property} />
+        <PropertyDetail property={property} isOwner={isOwner} />
       </main>
     </>
   );

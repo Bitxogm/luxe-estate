@@ -6,9 +6,10 @@ import PropertyActions from "./PropertyActions";
 
 interface PropertyDetailProps {
   property: Property;
+  isOwner?: boolean;
 }
 
-export default function PropertyDetail({ property }: PropertyDetailProps) {
+export default function PropertyDetail({ property, isOwner }: PropertyDetailProps) {
   const isRent = property.priceType === "rent";
 
   const formattedPrice = isRent
@@ -101,7 +102,7 @@ export default function PropertyDetail({ property }: PropertyDetailProps) {
           </div>
 
           {/* CTA */}
-          <PropertyActions isRent={isRent} propertySlug={property.slug} />
+          <PropertyActions isRent={isRent} propertySlug={property.slug} isOwner={isOwner} />
         </div>
       </div>
     </div>

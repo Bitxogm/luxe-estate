@@ -2,15 +2,16 @@
 
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
 import { notify } from "@/lib/toast";
 
 interface NavbarUserMenuProps {
   name?: string | null;
   email?: string | null;
+  role?: string | null;
 }
 
-export default function NavbarUserMenu({ name, email }: NavbarUserMenuProps) {
+export default function NavbarUserMenu({ name, email, role }: NavbarUserMenuProps) {
   const initials = name
     ? name
         .split(" ")
@@ -47,6 +48,20 @@ export default function NavbarUserMenu({ name, email }: NavbarUserMenuProps) {
         >
           <User size={15} /> Profile
         </Link>
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
+        >
+          <LayoutDashboard size={15} /> My Properties
+        </Link>
+        {role === "admin" && (
+          <Link
+            href="/admin/users"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-mosque transition-colors hover:bg-mosque/5 dark:text-hint-green dark:hover:bg-hint-green/5"
+          >
+            <Shield size={15} /> Admin Panel
+          </Link>
+        )}
         <button
           onClick={handleSignOut}
           className="flex w-full items-center gap-2 rounded-b-xl px-4 py-2.5 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"

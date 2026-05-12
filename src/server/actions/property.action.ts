@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { createProperty } from "@/server/services/property.service";
+import { createProperty, updateProperty, deleteProperty } from "@/server/services/property.service";
 import { generateUniqueSlug } from "@/lib/slug";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -32,6 +33,7 @@ export async function createPropertyAction(
 
   const raw = Object.fromEntries(formData.entries());
   raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
+  if (!raw.badge) delete raw.badge;
 
   const result = formSchema.safeParse(raw);
   if (!result.success) {
@@ -60,4 +62,59 @@ export async function createPropertyAction(
   });
 
   redirect(`/properties/${property.slug}`);
+}
+
+export async function updatePropertyAction(
+  _prev: unknown,
+  formData: FormData
+): Promise<{ errors: Record<string, string> }> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const propertyId = formData.get("propertyId") as string;
+  const existing = await prisma.property.findUnique({ where: { id: propertyId } });
+
+  if (!existing) return { errors: { _: "Property not found" } };
+  if (existing.userId !== session.user.id && session.user.role !== "admin") {
+    return { errors: { _: "Unauthorized" } };
+  }
+
+  const raw = Object.fromEntries(formData.entries());
+  raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
+  if (!raw.badge) delete raw.badge;
+
+  const result = formSchema.safeParse(raw);
+  if (!result.success) {
+    const errors: Record<string, string> = {};
+    result.error.errors.forEach((e) => {
+      if (e.path[0]) errors[String(e.path[0])] = e.message;
+    });
+    return { errors };
+  }
+
+  const data = result.data;
+  const status = data.priceType === "sale" ? ("FOR SALE" as const) : ("FOR RENT" as const);
+
+  await updateProperty(existing.id, {
+    ...data,
+    status,
+    badge: data.badge ?? undefined,
+  });
+
+  redirect(`/properties/${existing.slug}`);
+}
+
+export async function deletePropertyAction(propertyId: string): Promise<{ error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const existing = await prisma.property.findUnique({ where: { id: propertyId } });
+  if (!existing) return { error: "Not found" };
+  if (existing.userId !== session.user.id && session.user.role !== "admin") {
+    return { error: "Unauthorized" };
+  }
+
+  await deleteProperty(propertyId);
+  revalidatePath("/dashboard");
+  return {};
 }

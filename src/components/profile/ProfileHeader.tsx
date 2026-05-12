@@ -3,6 +3,7 @@ interface ProfileHeaderProps {
   email: string;
   createdAt: Date;
   savedCount: number;
+  visitCount: number;
 }
 
 function getInitials(name: string) {
@@ -14,7 +15,13 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-export default function ProfileHeader({ name, email, createdAt, savedCount }: ProfileHeaderProps) {
+export default function ProfileHeader({
+  name,
+  email,
+  createdAt,
+  savedCount,
+  visitCount,
+}: ProfileHeaderProps) {
   const memberYear = new Date(createdAt).getFullYear();
 
   return (
@@ -42,7 +49,7 @@ export default function ProfileHeader({ name, email, createdAt, savedCount }: Pr
         </div>
         <div className="w-px bg-nordic/10 dark:bg-white/10" />
         <div className="text-center">
-          <div className="text-2xl font-bold text-mosque dark:text-hint-green">0</div>
+          <div className="text-2xl font-bold text-mosque dark:text-hint-green">{visitCount}</div>
           <div className="text-xs font-medium uppercase tracking-wider text-nordic/50 dark:text-clear-day/50">
             Visits
           </div>

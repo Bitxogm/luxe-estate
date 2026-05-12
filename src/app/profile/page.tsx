@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import * as userRepo from "@/server/repositories/user.repository";
 import { findSavedProperties } from "@/server/repositories/property.repository";
+import { findVisitsByUser } from "@/server/repositories/visit.repository";
 import Navbar from "@/components/sections/Navbar";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
@@ -15,9 +16,10 @@ export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/profile");
 
-  const [user, savedProperties] = await Promise.all([
+  const [user, savedProperties, visits] = await Promise.all([
     userRepo.findUserById(session.user.id),
     findSavedProperties(session.user.id),
+    findVisitsByUser(session.user.id),
   ]);
 
   if (!user) redirect("/login");
@@ -31,8 +33,14 @@ export default async function ProfilePage() {
           email={user.email}
           createdAt={user.createdAt}
           savedCount={user._count.savedProperties}
+          visitCount={visits.length}
         />
-        <ProfileTabs savedProperties={savedProperties} name={user.name ?? ""} email={user.email} />
+        <ProfileTabs
+          savedProperties={savedProperties}
+          visits={visits}
+          name={user.name ?? ""}
+          email={user.email}
+        />
       </main>
     </>
   );
