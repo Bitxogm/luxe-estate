@@ -30,9 +30,11 @@ export default function FeaturedPropertyCard({
             className="object-cover transition-transform duration-700 group-hover:scale-105"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
-          <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-nordic backdrop-blur-sm">
-            {property.badge}
-          </div>
+          {property.badge && (
+            <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-nordic backdrop-blur-sm">
+              {property.badge}
+            </div>
+          )}
           <SaveButton
             propertyId={property.id}
             initialSaved={isSaved}

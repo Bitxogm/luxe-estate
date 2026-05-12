@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import SearchFiltersModal from "@/components/sections/SearchFiltersModal";
 
 const FILTERS = ["All", "House", "Apartment", "Villa", "Penthouse"] as const;
 type Filter = (typeof FILTERS)[number];
 
 export default function HeroSearch() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
 
@@ -78,9 +80,18 @@ export default function HeroSearch() {
             </button>
           ))}
           <div className="mx-2 h-6 w-px bg-nordic/10 transition-colors dark:bg-clear-day/20" />
-          <button className="flex items-center gap-1 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-nordic transition-colors hover:bg-black/5 dark:text-clear-day dark:hover:bg-white/10">
-            <SlidersHorizontal size={16} /> Filters
-          </button>
+          <SearchFiltersModal
+            city={searchParams.get("city") ?? undefined}
+            type={searchParams.get("type") ?? undefined}
+            minPrice={
+              searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined
+            }
+            maxPrice={
+              searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined
+            }
+            minBeds={searchParams.get("minBeds") ? Number(searchParams.get("minBeds")) : 0}
+            minBaths={searchParams.get("minBaths") ? Number(searchParams.get("minBaths")) : 0}
+          />
         </div>
       </div>
     </section>

@@ -21,8 +21,8 @@ export default function PropertyCard({ property, isSaved = false }: PropertyCard
       }).format(property.price);
 
   return (
-    <Link href={`/properties/${property.slug}`} className="block h-full">
-      <article className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl bg-white shadow-card transition-all duration-300 hover:shadow-soft dark:border dark:border-white/5 dark:bg-nordic-muted/10">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-card transition-all duration-300 hover:shadow-soft dark:border dark:border-white/5 dark:bg-nordic-muted/10">
+      <Link href={`/properties/${property.slug}`} className="flex flex-1 flex-col">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
             src={property.imageUrl}
@@ -77,7 +77,16 @@ export default function PropertyCard({ property, isSaved = false }: PropertyCard
             </div>
           </div>
         </div>
-      </article>
-    </Link>
+      </Link>
+
+      <div className="px-4 pb-4">
+        <Link
+          href={`/properties/${property.slug}/schedule`}
+          className="block w-full rounded-lg border border-mosque/20 py-2 text-center text-xs font-medium text-mosque transition-colors hover:bg-mosque hover:text-white dark:border-hint-green/30 dark:text-hint-green dark:hover:bg-hint-green/20"
+        >
+          Schedule Tour
+        </Link>
+      </div>
+    </article>
   );
 }

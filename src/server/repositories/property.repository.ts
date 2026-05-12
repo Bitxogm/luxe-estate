@@ -72,6 +72,29 @@ export async function deleteProperty(id: string) {
   return prisma.property.delete({ where: { id } });
 }
 
+export async function findPropertiesByUser(userId: string, page = 1, limit = 8) {
+  const skip = (page - 1) * limit;
+  const [properties, total] = await Promise.all([
+    prisma.property.findMany({
+      where: { userId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.property.count({ where: { userId } }),
+  ]);
+  return { properties, total };
+}
+
+export async function getUserPropertyStats(userId: string) {
+  const [total, forSale, forRent] = await Promise.all([
+    prisma.property.count({ where: { userId } }),
+    prisma.property.count({ where: { userId, priceType: "sale" } }),
+    prisma.property.count({ where: { userId, priceType: "rent" } }),
+  ]);
+  return { total, forSale, forRent };
+}
+
 export async function getSavedPropertyIds(userId: string): Promise<Set<string>> {
   const saved = await prisma.savedProperty.findMany({
     where: { userId },

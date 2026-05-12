@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createPropertyAction } from "@/server/actions/property.action";
+import { createPropertyAction, updatePropertyAction } from "@/server/actions/property.action";
 import { Minus, Plus, BedDouble, Bath, Ruler, MapPin, ImageIcon, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { Property } from "@prisma/client";
 
 const inputClass =
   "w-full rounded-lg border border-nordic/10 bg-white px-4 py-2.5 text-sm text-nordic placeholder-nordic/30 outline-none transition-all focus:border-mosque focus:ring-1 focus:ring-mosque dark:border-white/10 dark:bg-nordic-muted/20 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:border-hint-green dark:focus:ring-hint-green";
@@ -67,14 +68,20 @@ function Counter({
 
 const initialState = { errors: {} as Record<string, string> };
 
-export default function NewPropertyForm() {
-  const [state, action, isPending] = useActionState(createPropertyAction, initialState);
-  const [beds, setBeds] = useState(1);
-  const [baths, setBaths] = useState(1);
+interface NewPropertyFormProps {
+  property?: Property;
+}
+
+export default function NewPropertyForm({ property }: NewPropertyFormProps) {
+  const formAction = property ? updatePropertyAction : createPropertyAction;
+  const [state, action, isPending] = useActionState(formAction, initialState);
+  const [beds, setBeds] = useState(property?.beds ?? 1);
+  const [baths, setBaths] = useState(property?.baths ?? 1);
   const router = useRouter();
 
   return (
     <form id="new-property-form" action={action}>
+      {property && <input type="hidden" name="propertyId" value={property.id} />}
       <input type="hidden" name="beds" value={beds} />
       <input type="hidden" name="baths" value={baths} />
 
@@ -94,6 +101,7 @@ export default function NewPropertyForm() {
                   name="title"
                   type="text"
                   placeholder="e.g. Modern Penthouse with Ocean View"
+                  defaultValue={property?.title ?? ""}
                   className={inputClass}
                 />
                 {state.errors.title && <p className={errorClass}>{state.errors.title}</p>}
@@ -114,6 +122,7 @@ export default function NewPropertyForm() {
                       type="number"
                       min="0"
                       placeholder="0"
+                      defaultValue={property?.price ?? ""}
                       className={inputClass + " pl-7"}
                     />
                   </div>
@@ -124,7 +133,12 @@ export default function NewPropertyForm() {
                   <label htmlFor="priceType" className={labelClass}>
                     Listing Type
                   </label>
-                  <select id="priceType" name="priceType" className={selectClass}>
+                  <select
+                    id="priceType"
+                    name="priceType"
+                    defaultValue={property?.priceType ?? "sale"}
+                    className={selectClass}
+                  >
                     <option value="sale">For Sale</option>
                     <option value="rent">For Rent</option>
                   </select>
@@ -134,7 +148,12 @@ export default function NewPropertyForm() {
                   <label htmlFor="type" className={labelClass}>
                     Property Type
                   </label>
-                  <select id="type" name="type" className={selectClass}>
+                  <select
+                    id="type"
+                    name="type"
+                    defaultValue={property?.type ?? "House"}
+                    className={selectClass}
+                  >
                     <option value="House">House</option>
                     <option value="Apartment">Apartment</option>
                     <option value="Villa">Villa</option>
@@ -148,7 +167,12 @@ export default function NewPropertyForm() {
                   <label htmlFor="badge" className={labelClass}>
                     Badge
                   </label>
-                  <select id="badge" name="badge" className={selectClass}>
+                  <select
+                    id="badge"
+                    name="badge"
+                    defaultValue={property?.badge ?? ""}
+                    className={selectClass}
+                  >
                     <option value="">None</option>
                     <option value="Exclusive">Exclusive</option>
                     <option value="New Arrival">New Arrival</option>
@@ -161,6 +185,7 @@ export default function NewPropertyForm() {
                     <input
                       type="checkbox"
                       name="isFeatured"
+                      defaultChecked={property?.isFeatured ?? false}
                       className="h-4 w-4 rounded border-gray-300 text-mosque focus:ring-mosque"
                     />
                     <span className="text-sm font-medium text-nordic dark:text-clear-day">
@@ -185,6 +210,7 @@ export default function NewPropertyForm() {
                   name="imageUrl"
                   type="url"
                   placeholder="https://example.com/property.jpg"
+                  defaultValue={property?.imageUrl ?? ""}
                   className={inputClass}
                 />
                 {state.errors.imageUrl && <p className={errorClass}>{state.errors.imageUrl}</p>}
@@ -198,6 +224,7 @@ export default function NewPropertyForm() {
                   name="imageAlt"
                   type="text"
                   placeholder="e.g. Front view of the property"
+                  defaultValue={property?.imageAlt ?? ""}
                   className={inputClass}
                 />
               </div>
@@ -220,6 +247,7 @@ export default function NewPropertyForm() {
                   name="address"
                   type="text"
                   placeholder="Street address"
+                  defaultValue={property?.address ?? ""}
                   className={inputClass}
                 />
                 {state.errors.address && <p className={errorClass}>{state.errors.address}</p>}
@@ -233,6 +261,7 @@ export default function NewPropertyForm() {
                   name="city"
                   type="text"
                   placeholder="City"
+                  defaultValue={property?.city ?? ""}
                   className={inputClass}
                 />
                 {state.errors.city && <p className={errorClass}>{state.errors.city}</p>}
@@ -254,6 +283,7 @@ export default function NewPropertyForm() {
                   type="number"
                   min="1"
                   placeholder="0"
+                  defaultValue={property?.sqm ?? ""}
                   className={inputClass}
                 />
                 {state.errors.sqm && <p className={errorClass}>{state.errors.sqm}</p>}

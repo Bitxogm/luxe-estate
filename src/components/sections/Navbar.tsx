@@ -20,30 +20,30 @@ export default async function Navbar() {
           </div>
 
           <div className="hidden items-center space-x-8 md:flex">
-            <a
-              href="#"
-              className="border-b-2 border-mosque px-1 py-1 text-sm font-medium text-mosque transition-colors dark:border-hint-green dark:text-hint-green"
+            <Link
+              href="/?priceType=sale"
+              className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
             >
               Buy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/?priceType=rent"
               className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
             >
               Rent
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/properties/new"
               className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
             >
               Sell
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/favorites"
               className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
             >
               Saved Homes
-            </a>
+            </Link>
           </div>
 
           <div className="flex items-center space-x-6">
@@ -57,7 +57,11 @@ export default async function Navbar() {
             <ThemeToggle />
             <div className="ml-2 border-l border-nordic/10 pl-4 dark:border-clear-day/10">
               {session?.user ? (
-                <NavbarUserMenu name={session.user.name} email={session.user.email} />
+                <NavbarUserMenu
+                  name={session.user.name}
+                  email={session.user.email}
+                  role={session.user.role}
+                />
               ) : (
                 <Link
                   href="/login"

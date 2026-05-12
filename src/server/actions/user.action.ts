@@ -1,8 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import * as repo from "@/server/repositories/user.repository";
+import { prisma } from "@/lib/prisma";
 
 const nameSchema = z.string().min(2, "Name must be at least 2 characters").max(100);
 
@@ -17,4 +19,23 @@ export async function updateUserName(
 
   const user = await repo.updateUserName(session.user.id, result.data);
   return { success: true, name: user.name ?? "" };
+}
+
+const VALID_ROLES = ["user", "admin"] as const;
+
+export async function changeUserRoleAction(
+  userId: string,
+  role: string
+): Promise<{ error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (session.user.role !== "admin") return { error: "Unauthorized" };
+  if (!VALID_ROLES.includes(role as (typeof VALID_ROLES)[number])) {
+    return { error: "Invalid role" };
+  }
+  if (userId === session.user.id) return { error: "Cannot change your own role" };
+
+  await prisma.user.update({ where: { id: userId }, data: { role } });
+  revalidatePath("/admin/users");
+  return {};
 }
