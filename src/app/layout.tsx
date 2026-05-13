@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import SessionProvider from "@/components/SessionProvider";
+import Footer from "@/components/sections/Footer";
 
 export const metadata: Metadata = {
   title: "Luxe Estate — Premium Real Estate",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
+            <Footer />
             <Toaster position="bottom-right" richColors closeButton />
           </ThemeProvider>
         </SessionProvider>

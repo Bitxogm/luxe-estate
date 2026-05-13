@@ -13,6 +13,7 @@ const registerSchema = z.object({
     .max(128)
     .regex(/[A-Z]/, "Must contain at least one uppercase letter")
     .regex(/[0-9]/, "Must contain at least one number"),
+  image: z.string().url().optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -23,7 +24,7 @@ export async function registerUser(input: RegisterInput) {
     return { error: parsed.error.errors[0].message };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, image } = parsed.data;
 
   const existing = await prisma.user.findUnique({
     where: { email },
@@ -37,7 +38,7 @@ export async function registerUser(input: RegisterInput) {
   const passwordHash = await bcrypt.hash(password, 12);
 
   await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: { name, email, passwordHash, ...(image && { image }) },
   });
 
   return { success: true };

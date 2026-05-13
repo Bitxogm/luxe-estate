@@ -4,11 +4,13 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -78,10 +80,12 @@ model Property {
   sqm         Float
   type        String
   status      String
-  badge       String?
-  imageUrl    String
-  imageAlt    String
-  isFeatured  Boolean  @default(false)
+  badge        String?
+  description  String?
+  imageUrl     String
+  imageAlt     String
+  images       String[]
+  isFeatured   Boolean  @default(false)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

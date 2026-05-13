@@ -50,3 +50,11 @@ src/
 - No modificar `tailwind.config.js` ni `globals.css` sin avisar
 - Crear componente reutilizable en cuanto algo se repita 2 veces
 - No hacer commit sin que se pida explícitamente
+
+## Comandos de base de datos
+
+- Stack: Prisma 5 (downgrade permanente desde Prisma 7 por incompatibilidades con Node 18)
+- Usar directamente: `npx prisma [comando]` — funciona sin nvm ni rutas especiales
+- db push: `pnpm db:push`
+- db studio: `pnpm db:studio`
+- db generate: `pnpm db:generate`

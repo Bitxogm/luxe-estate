@@ -49,6 +49,7 @@ export async function findUserById(id: string) {
       id: true,
       name: true,
       email: true,
+      image: true,
       createdAt: true,
       _count: { select: { savedProperties: true } },
     },
@@ -60,5 +61,13 @@ export async function updateUserName(id: string, name: string) {
     where: { id },
     data: { name },
     select: { id: true, name: true, email: true },
+  });
+}
+
+export async function updateUserImage(id: string, image: string) {
+  return prisma.user.update({
+    where: { id },
+    data: { image },
+    select: { id: true, image: true },
   });
 }

@@ -21,6 +21,20 @@ export async function updateUserName(
   return { success: true, name: user.name ?? "" };
 }
 
+export async function updateUserAvatarAction(
+  imageUrl: string
+): Promise<{ success: true; image: string } | { success: false; error: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthenticated" };
+
+  if (!imageUrl.startsWith("https://")) return { success: false, error: "Invalid image URL" };
+
+  const user = await repo.updateUserImage(session.user.id, imageUrl);
+  revalidatePath("/profile");
+  revalidatePath("/", "layout");
+  return { success: true, image: user.image ?? "" };
+}
+
 const VALID_ROLES = ["user", "admin"] as const;
 
 export async function changeUserRoleAction(

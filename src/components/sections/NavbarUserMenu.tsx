@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
 import { notify } from "@/lib/toast";
 
@@ -9,9 +10,10 @@ interface NavbarUserMenuProps {
   name?: string | null;
   email?: string | null;
   role?: string | null;
+  image?: string | null;
 }
 
-export default function NavbarUserMenu({ name, email, role }: NavbarUserMenuProps) {
+export default function NavbarUserMenu({ name, email, role, image }: NavbarUserMenuProps) {
   const initials = name
     ? name
         .split(" ")
@@ -33,7 +35,17 @@ export default function NavbarUserMenu({ name, email, role }: NavbarUserMenuProp
         aria-label="User menu"
         className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-hint-green text-sm font-semibold text-mosque ring-2 ring-transparent transition-all hover:ring-mosque dark:bg-mosque dark:text-hint-green dark:hover:ring-hint-green"
       >
-        {initials}
+        {image ? (
+          <Image
+            src={image}
+            alt={name ?? "Avatar"}
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover"
+          />
+        ) : (
+          initials
+        )}
       </button>
       <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-nordic/10 bg-white opacity-0 shadow-soft backdrop-blur-md transition-all group-focus-within:pointer-events-auto group-focus-within:opacity-100 dark:border-white/10 dark:bg-nordic-muted/90">
         <div className="border-b border-nordic/10 px-4 py-3 dark:border-white/10">

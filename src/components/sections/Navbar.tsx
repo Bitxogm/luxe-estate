@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { auth } from "@/auth";
 import NavbarUserMenu from "./NavbarUserMenu";
+import MobileDrawer from "./MobileDrawer";
 
 export default async function Navbar() {
   const session = await auth();
@@ -55,12 +56,13 @@ export default async function Navbar() {
               <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-clear-day bg-red-500 transition-colors dark:border-nordic" />
             </button>
             <ThemeToggle />
-            <div className="ml-2 border-l border-nordic/10 pl-4 dark:border-clear-day/10">
+            <div className="ml-2 hidden border-l border-nordic/10 pl-4 dark:border-clear-day/10 md:flex md:items-center">
               {session?.user ? (
                 <NavbarUserMenu
                   name={session.user.name}
                   email={session.user.email}
                   role={session.user.role}
+                  image={session.user.image}
                 />
               ) : (
                 <Link
@@ -71,6 +73,13 @@ export default async function Navbar() {
                 </Link>
               )}
             </div>
+            <MobileDrawer
+              user={
+                session?.user
+                  ? { name: session.user.name, email: session.user.email, role: session.user.role }
+                  : null
+              }
+            />
           </div>
         </div>
       </div>

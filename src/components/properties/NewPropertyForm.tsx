@@ -1,8 +1,22 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
 import { createPropertyAction, updatePropertyAction } from "@/server/actions/property.action";
-import { Minus, Plus, BedDouble, Bath, Ruler, MapPin, ImageIcon, Info } from "lucide-react";
+import { uploadPropertyImageAction } from "@/server/actions/upload.action";
+import {
+  Minus,
+  Plus,
+  BedDouble,
+  Bath,
+  Ruler,
+  MapPin,
+  ImageIcon,
+  Info,
+  Upload,
+  X,
+  Loader2,
+} from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Property } from "@prisma/client";
 
@@ -77,7 +91,50 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
   const [state, action, isPending] = useActionState(formAction, initialState);
   const [beds, setBeds] = useState(property?.beds ?? 1);
   const [baths, setBaths] = useState(property?.baths ?? 1);
+  const [imageUrl, setImageUrl] = useState(property?.imageUrl ?? "");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  async function handleImageFile(file: File) {
+    setIsUploadingImage(true);
+    setImageUploadError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadPropertyImageAction(formData);
+    setIsUploadingImage(false);
+
+    if ("error" in result) {
+      setImageUploadError(result.error);
+    } else {
+      setImageUrl(result.url);
+    }
+  }
+
+  function handleImageInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) handleImageFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave() {
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageFile(file);
+  }
 
   return (
     <form id="new-property-form" action={action}>
@@ -105,6 +162,26 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                   className={inputClass}
                 />
                 {state.errors.title && <p className={errorClass}>{state.errors.title}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="description" className={labelClass}>
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows={4}
+                  placeholder="Describe the property in detail — location highlights, finishes, amenities…"
+                  defaultValue={property?.description ?? ""}
+                  className={inputClass + " resize-none"}
+                />
+                {state.errors.description && (
+                  <p className={errorClass}>{state.errors.description}</p>
+                )}
+                <p className="mt-1 text-xs text-nordic/40 dark:text-clear-day/40">
+                  Min 20 characters · max 1000
+                </p>
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -197,24 +274,74 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
             </div>
           </div>
 
-          {/* Image */}
+          {/* Image upload */}
           <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-nordic-muted/10">
             <SectionHeader icon={ImageIcon} title="Main Image" />
             <div className="space-y-4 p-8">
-              <div>
-                <label htmlFor="imageUrl" className={labelClass}>
-                  Image URL <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="imageUrl"
-                  name="imageUrl"
-                  type="url"
-                  placeholder="https://example.com/property.jpg"
-                  defaultValue={property?.imageUrl ?? ""}
-                  className={inputClass}
-                />
-                {state.errors.imageUrl && <p className={errorClass}>{state.errors.imageUrl}</p>}
-              </div>
+              <input type="hidden" name="imageUrl" value={imageUrl} />
+
+              {imageUrl ? (
+                <div className="relative overflow-hidden rounded-lg">
+                  <Image
+                    src={imageUrl}
+                    alt="Property preview"
+                    width={800}
+                    height={450}
+                    className="h-56 w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl("");
+                      setImageUploadError(null);
+                      if (imageInputRef.current) imageInputRef.current.value = "";
+                    }}
+                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-nordic/80 text-white transition-colors hover:bg-nordic"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  disabled={isUploadingImage}
+                  className={`flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed py-12 transition-colors ${
+                    isDragging
+                      ? "border-mosque bg-hint-green/20"
+                      : "border-nordic/20 bg-clear-day hover:bg-hint-green/20 dark:border-white/10 dark:bg-white/5 dark:hover:bg-hint-green/10"
+                  } disabled:opacity-60`}
+                >
+                  {isUploadingImage ? (
+                    <Loader2 size={28} className="animate-spin text-mosque dark:text-hint-green" />
+                  ) : (
+                    <Upload size={28} className="text-nordic/40 dark:text-clear-day/40" />
+                  )}
+                  <span className="text-sm font-medium text-nordic dark:text-clear-day">
+                    {isUploadingImage ? "Uploading…" : "Click to upload or drag & drop"}
+                  </span>
+                  {!isUploadingImage && (
+                    <span className="text-xs text-nordic/40 dark:text-clear-day/40">
+                      JPG, PNG or WebP — max 5MB
+                    </span>
+                  )}
+                </button>
+              )}
+
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleImageInputChange}
+              />
+
+              {imageUploadError && <p className={errorClass}>{imageUploadError}</p>}
+              {state.errors.imageUrl && <p className={errorClass}>{state.errors.imageUrl}</p>}
+
               <div>
                 <label htmlFor="imageAlt" className={labelClass}>
                   Image description

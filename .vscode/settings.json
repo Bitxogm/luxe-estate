@@ -14,5 +14,6 @@
     "pnpm-lock.yaml": true,
     "package-lock.json": true,
     "yarn.lock": true
-  }
+  },
+  "prisma.pinToPrisma6": true
 }

@@ -5,13 +5,15 @@ import { updateUserName } from "@/server/actions/user.action";
 import { notify } from "@/lib/toast";
 import { signOut } from "next-auth/react";
 import { Mail, LogOut } from "lucide-react";
+import AvatarUpload from "@/components/profile/AvatarUpload";
 
 interface PreferencesFormProps {
   name: string;
   email: string;
+  image?: string | null;
 }
 
-export default function PreferencesForm({ name, email }: PreferencesFormProps) {
+export default function PreferencesForm({ name, email, image }: PreferencesFormProps) {
   const [currentName, setCurrentName] = useState(name);
   const [draft, setDraft] = useState(name);
   const [isPending, startTransition] = useTransition();
@@ -35,11 +37,19 @@ export default function PreferencesForm({ name, email }: PreferencesFormProps) {
 
   return (
     <section className="rounded-2xl border border-nordic/5 bg-white p-8 dark:border-white/5 dark:bg-nordic-muted/10">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-nordic dark:text-clear-day">Account Preferences</h2>
+        <p className="mt-1 text-sm text-nordic/50 dark:text-clear-day/50">
+          Manage your account settings
+        </p>
+      </div>
+
+      <div className="mb-8 flex items-center gap-6">
+        <AvatarUpload name={name} email={email} image={image} size="sm" />
         <div>
-          <h2 className="text-xl font-bold text-nordic dark:text-clear-day">Account Preferences</h2>
-          <p className="mt-1 text-sm text-nordic/50 dark:text-clear-day/50">
-            Manage your account settings
+          <p className="text-sm font-medium text-nordic dark:text-clear-day">Profile photo</p>
+          <p className="mt-1 text-xs text-nordic/40 dark:text-clear-day/40">
+            Click the camera icon to upload — JPG, PNG or WebP, max 5MB
           </p>
         </div>
       </div>

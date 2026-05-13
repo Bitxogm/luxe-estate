@@ -1,23 +1,18 @@
+import AvatarUpload from "@/components/profile/AvatarUpload";
+
 interface ProfileHeaderProps {
   name: string;
   email: string;
+  image?: string | null;
   createdAt: Date;
   savedCount: number;
   visitCount: number;
 }
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export default function ProfileHeader({
   name,
   email,
+  image,
   createdAt,
   savedCount,
   visitCount,
@@ -27,9 +22,7 @@ export default function ProfileHeader({
   return (
     <header className="mb-10 flex flex-col items-start justify-between gap-8 rounded-3xl border border-nordic/5 bg-hint-green p-8 shadow-sm dark:border-white/5 dark:bg-white/5 md:flex-row md:items-center">
       <div className="flex items-center gap-6">
-        <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full border-4 border-white bg-mosque text-2xl font-bold text-white shadow-lg dark:border-nordic lg:h-32 lg:w-32 lg:text-3xl">
-          {getInitials(name || email)}
-        </div>
+        <AvatarUpload name={name} email={email} image={image} size="lg" />
         <div>
           <h1 className="mb-2 font-sf text-3xl font-bold tracking-tight text-nordic dark:text-clear-day lg:text-4xl">
             {name || "Anonymous"}
