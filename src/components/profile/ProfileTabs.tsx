@@ -16,6 +16,7 @@ interface ProfileTabsProps {
   visits: VisitWithProperty[];
   name: string;
   email: string;
+  image?: string | null;
 }
 
 const TABS: { id: Tab; label: string }[] = [
@@ -30,7 +31,13 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
 };
 
-export default function ProfileTabs({ savedProperties, visits, name, email }: ProfileTabsProps) {
+export default function ProfileTabs({
+  savedProperties,
+  visits,
+  name,
+  email,
+  image,
+}: ProfileTabsProps) {
   const [active, setActive] = useState<Tab>("saved");
 
   return (
@@ -151,7 +158,7 @@ export default function ProfileTabs({ savedProperties, visits, name, email }: Pr
         </div>
       )}
 
-      {active === "settings" && <PreferencesForm name={name} email={email} />}
+      {active === "settings" && <PreferencesForm name={name} email={email} image={image} />}
     </>
   );
 }

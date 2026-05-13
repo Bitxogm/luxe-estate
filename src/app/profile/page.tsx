@@ -31,6 +31,7 @@ export default async function ProfilePage() {
         <ProfileHeader
           name={user.name ?? ""}
           email={user.email}
+          image={user.image}
           createdAt={user.createdAt}
           savedCount={user._count.savedProperties}
           visitCount={visits.length}
@@ -40,6 +41,7 @@ export default async function ProfilePage() {
           visits={visits}
           name={user.name ?? ""}
           email={user.email}
+          image={user.image}
         />
       </main>
     </>

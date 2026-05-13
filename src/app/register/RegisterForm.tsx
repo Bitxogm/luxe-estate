@@ -1,25 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { Building2 } from "lucide-react";
+import { Building2, Camera, Loader2 } from "lucide-react";
 import { notify } from "@/lib/toast";
 import { registerUser } from "@/server/actions/auth.action";
+import { uploadAvatarAction } from "@/server/actions/upload.action";
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export default function RegisterForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadAvatarAction(formData);
+    setIsUploadingAvatar(false);
+
+    if ("error" in result) {
+      notify.error(result.error);
+    } else {
+      setAvatarUrl(result.url);
+    }
+  }
+
+  async function handleSubmit(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     setLoading(true);
 
-    const result = await registerUser({ name, email, password });
+    const result = await registerUser({
+      name,
+      email,
+      password,
+      image: avatarUrl || undefined,
+    });
 
     if (result.error) {
       notify.error(result.error);
@@ -66,6 +103,45 @@ export default function RegisterForm() {
       {/* Form card */}
       <div className="overflow-hidden rounded-2xl border border-nordic/10 bg-white shadow-soft dark:border-white/10 dark:bg-nordic-muted/20">
         <form onSubmit={handleSubmit} className="space-y-5 p-8">
+          {/* Avatar picker */}
+          <div className="flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUploadingAvatar}
+              className="relative h-20 w-20 flex-shrink-0 focus:outline-none"
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt="Avatar preview"
+                  fill
+                  className="rounded-full border-4 border-hint-green object-cover shadow-md"
+                  sizes="80px"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-full border-4 border-dashed border-nordic/20 bg-clear-day text-lg font-bold text-nordic/40 transition-colors hover:border-mosque hover:bg-hint-green/20 dark:border-white/20 dark:bg-white/5 dark:hover:border-hint-green">
+                  {name ? getInitials(name) : <Camera size={22} />}
+                </div>
+              )}
+              {isUploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-nordic/40">
+                  <Loader2 size={20} className="animate-spin text-white" />
+                </div>
+              )}
+            </button>
+            <p className="text-xs text-nordic/40 dark:text-clear-day/40">
+              {avatarUrl ? "Photo added" : "Add profile photo (optional)"}
+            </p>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <label
               htmlFor="name"
@@ -126,7 +202,7 @@ export default function RegisterForm() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isUploadingAvatar}
             className="w-full rounded-lg bg-mosque py-3 text-sm font-medium text-white shadow-md shadow-mosque/20 transition-all hover:-translate-y-0.5 hover:bg-mosque/90 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60"
           >
             {loading ? "Creating account…" : "Create account"}

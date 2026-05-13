@@ -19,6 +19,7 @@ const formSchema = z.object({
   sqm: z.coerce.number().positive("Area must be positive"),
   type: z.enum(["House", "Apartment", "Villa", "Penthouse"]),
   badge: z.enum(["Exclusive", "New Arrival", "Price Drop"]).optional(),
+  description: z.string().min(20, "Minimum 20 characters").max(1000).optional(),
   imageUrl: z.string().url("Must be a valid URL"),
   imageAlt: z.string().min(1).max(200),
   isFeatured: z.coerce.boolean().optional().default(false),
@@ -34,6 +35,7 @@ export async function createPropertyAction(
   const raw = Object.fromEntries(formData.entries());
   raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
   if (!raw.badge) delete raw.badge;
+  if (!raw.description) delete raw.description;
 
   const result = formSchema.safeParse(raw);
   if (!result.success) {
@@ -82,6 +84,7 @@ export async function updatePropertyAction(
   const raw = Object.fromEntries(formData.entries());
   raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
   if (!raw.badge) delete raw.badge;
+  if (!raw.description) delete raw.description;
 
   const result = formSchema.safeParse(raw);
   if (!result.success) {
