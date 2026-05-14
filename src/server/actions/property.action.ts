@@ -20,15 +20,19 @@ const formSchema = z.object({
   type: z.enum(["House", "Apartment", "Villa", "Penthouse"]),
   badge: z.enum(["Exclusive", "New Arrival", "Price Drop"]).optional(),
   description: z.string().min(20, "Minimum 20 characters").max(1000).optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
   imageUrl: z.string().url("Must be a valid URL"),
   imageAlt: z.string().min(1).max(200),
   isFeatured: z.coerce.boolean().optional().default(false),
 });
 
+type PropertyActionResult = { errors: Record<string, string> } | { redirectTo: string };
+
 export async function createPropertyAction(
   _prev: unknown,
   formData: FormData
-): Promise<{ errors: Record<string, string> }> {
+): Promise<PropertyActionResult> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/properties/new");
 
@@ -36,6 +40,8 @@ export async function createPropertyAction(
   raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
   if (!raw.badge) delete raw.badge;
   if (!raw.description) delete raw.description;
+  if (!raw.latitude) delete raw.latitude;
+  if (!raw.longitude) delete raw.longitude;
 
   let images: string[] = [];
   try {
@@ -66,19 +72,20 @@ export async function createPropertyAction(
     ...data,
     slug,
     status,
+    userId: session.user.id,
     badge: data.badge ?? undefined,
     isFeatured: data.isFeatured ?? false,
     imageAlt: data.imageAlt || data.title,
     images,
   });
 
-  redirect(`/properties/${property.slug}`);
+  return { redirectTo: `/properties/${property.slug}` };
 }
 
 export async function updatePropertyAction(
   _prev: unknown,
   formData: FormData
-): Promise<{ errors: Record<string, string> }> {
+): Promise<PropertyActionResult> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -94,6 +101,8 @@ export async function updatePropertyAction(
   raw.isFeatured = formData.get("isFeatured") === "on" ? "true" : "false";
   if (!raw.badge) delete raw.badge;
   if (!raw.description) delete raw.description;
+  if (!raw.latitude) delete raw.latitude;
+  if (!raw.longitude) delete raw.longitude;
 
   let images: string[] = [];
   try {
@@ -122,7 +131,7 @@ export async function updatePropertyAction(
     images,
   });
 
-  redirect(`/properties/${existing.slug}`);
+  return { redirectTo: `/properties/${existing.slug}` };
 }
 
 export async function deletePropertyAction(propertyId: string): Promise<{ error?: string }> {

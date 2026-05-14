@@ -3,7 +3,7 @@
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Shield, PlusCircle, Settings } from "lucide-react";
 import { notify } from "@/lib/toast";
 
 interface NavbarUserMenuProps {
@@ -47,39 +47,67 @@ export default function NavbarUserMenu({ name, email, role, image }: NavbarUserM
           initials
         )}
       </button>
-      <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-nordic/10 bg-white opacity-0 shadow-soft backdrop-blur-md transition-all group-focus-within:pointer-events-auto group-focus-within:opacity-100 dark:border-white/10 dark:bg-nordic-muted/90">
+
+      <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-nordic/10 bg-white opacity-0 shadow-soft backdrop-blur-md transition-all group-focus-within:pointer-events-auto group-focus-within:opacity-100 dark:border-white/10 dark:bg-nordic-muted/90">
+        {/* User info */}
         <div className="border-b border-nordic/10 px-4 py-3 dark:border-white/10">
           <p className="truncate text-sm font-medium text-nordic dark:text-clear-day">
             {name ?? "User"}
           </p>
           <p className="truncate text-xs text-nordic-muted dark:text-clear-day/50">{email}</p>
         </div>
-        <Link
-          href="/profile"
-          className="flex items-center gap-2 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
-        >
-          <User size={15} /> Profile
-        </Link>
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
-        >
-          <LayoutDashboard size={15} /> My Properties
-        </Link>
-        {role === "admin" && (
+
+        {/* Main nav group */}
+        <div className="py-1">
           <Link
-            href="/admin/users"
-            className="flex items-center gap-2 px-4 py-2.5 text-sm text-mosque transition-colors hover:bg-mosque/5 dark:text-hint-green dark:hover:bg-hint-green/5"
+            href="/profile"
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
           >
-            <Shield size={15} /> Admin Panel
+            <User size={15} className="text-nordic/50 dark:text-clear-day/50" /> My Profile
           </Link>
-        )}
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-2 rounded-b-xl px-4 py-2.5 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"
-        >
-          <LogOut size={15} /> Sign out
-        </button>
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
+          >
+            <LayoutDashboard size={15} className="text-nordic/50 dark:text-clear-day/50" /> My
+            Dashboard
+          </Link>
+          {role === "admin" && (
+            <Link
+              href="/admin/users"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-mosque transition-colors hover:bg-mosque/5 dark:text-hint-green dark:hover:bg-hint-green/5"
+            >
+              <Shield size={15} /> Admin Panel
+            </Link>
+          )}
+          <Link
+            href="/properties/new"
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
+          >
+            <PlusCircle size={15} className="text-nordic/50 dark:text-clear-day/50" /> List Property
+          </Link>
+        </div>
+
+        {/* Settings group */}
+        <div className="border-t border-nordic/10 py-1 dark:border-white/10">
+          <Link
+            href="/profile?tab=settings"
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5"
+          >
+            <Settings size={15} className="text-nordic/50 dark:text-clear-day/50" /> Account
+            Settings
+          </Link>
+        </div>
+
+        {/* Sign out */}
+        <div className="border-t border-nordic/10 py-1 dark:border-white/10">
+          <button
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-2.5 rounded-b-xl px-4 py-2.5 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"
+          >
+            <LogOut size={15} /> Sign out
+          </button>
+        </div>
       </div>
     </div>
   );

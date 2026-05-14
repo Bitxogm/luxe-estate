@@ -1,11 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { createPropertyAction, updatePropertyAction } from "@/server/actions/property.action";
 import { Minus, Plus, BedDouble, Bath, Ruler, MapPin, ImageIcon, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Property } from "@prisma/client";
 import ImageGalleryUploader from "@/components/properties/ImageGalleryUploader";
+import { notify } from "@/lib/toast";
 
 const inputClass =
   "w-full rounded-lg border border-nordic/10 bg-white px-4 py-2.5 text-sm text-nordic placeholder-nordic/30 outline-none transition-all focus:border-mosque focus:ring-1 focus:ring-mosque dark:border-white/10 dark:bg-nordic-muted/20 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:border-hint-green dark:focus:ring-hint-green";
@@ -67,29 +71,117 @@ function Counter({
   );
 }
 
-const initialState = { errors: {} as Record<string, string> };
+const schema = z.object({
+  title: z.string().min(1, "Title is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  price: z.string().min(1, "Price is required"),
+  priceType: z.enum(["sale", "rent"]),
+  type: z.enum(["House", "Apartment", "Villa", "Penthouse"]),
+  sqm: z.string().min(1, "Area is required"),
+  badge: z.string().optional(),
+  description: z
+    .string()
+    .refine((v) => !v || v.length >= 20, "Minimum 20 characters")
+    .refine((v) => !v || v.length <= 1000, "Maximum 1000 characters")
+    .optional(),
+  imageAlt: z.string().optional(),
+  isFeatured: z.boolean().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof schema>;
 
 interface NewPropertyFormProps {
   property?: Property;
 }
 
 export default function NewPropertyForm({ property }: NewPropertyFormProps) {
-  const formAction = property ? updatePropertyAction : createPropertyAction;
-  const [state, action, isPending] = useActionState(formAction, initialState);
+  const serverAction = property ? updatePropertyAction : createPropertyAction;
   const [beds, setBeds] = useState(property?.beds ?? 1);
   const [baths, setBaths] = useState(property?.baths ?? 1);
   const [imageUrl, setImageUrl] = useState(property?.imageUrl ?? "");
   const [images, setImages] = useState<string[]>(property?.images ?? []);
+  const [imageUrlError, setImageUrlError] = useState<string | undefined>();
   const router = useRouter();
 
-  return (
-    <form id="new-property-form" action={action}>
-      {property && <input type="hidden" name="propertyId" value={property.id} />}
-      <input type="hidden" name="beds" value={beds} />
-      <input type="hidden" name="baths" value={baths} />
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      <input type="hidden" name="images" value={JSON.stringify(images)} />
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      title: property?.title ?? "",
+      address: property?.address ?? "",
+      city: property?.city ?? "",
+      price: property?.price?.toString() ?? "",
+      priceType: (property?.priceType as "sale" | "rent") ?? "sale",
+      type: (property?.type as "House" | "Apartment" | "Villa" | "Penthouse") ?? "House",
+      sqm: property?.sqm?.toString() ?? "",
+      badge: property?.badge ?? "",
+      description: property?.description ?? "",
+      imageAlt: property?.imageAlt ?? "",
+      isFeatured: property?.isFeatured ?? false,
+      latitude: property?.latitude?.toString() ?? "",
+      longitude: property?.longitude?.toString() ?? "",
+    },
+  });
 
+  function handleImageUrlChange(url: string) {
+    setImageUrl(url);
+    if (url) setImageUrlError(undefined);
+  }
+
+  async function onSubmit(values: FormValues) {
+    if (!imageUrl) {
+      setImageUrlError("Please upload a main image");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("title", values.title);
+    formData.set("address", values.address);
+    formData.set("city", values.city);
+    formData.set("price", values.price);
+    formData.set("priceType", values.priceType);
+    formData.set("type", values.type);
+    formData.set("sqm", values.sqm);
+    formData.set("isFeatured", (values.isFeatured ?? false) ? "on" : "off");
+    formData.set("beds", String(beds));
+    formData.set("baths", String(baths));
+    formData.set("imageUrl", imageUrl);
+    formData.set("images", JSON.stringify(images));
+    formData.set("imageAlt", values.imageAlt || values.title);
+    if (values.badge) formData.set("badge", values.badge);
+    if (values.description) formData.set("description", values.description);
+    if (values.latitude) formData.set("latitude", values.latitude);
+    if (values.longitude) formData.set("longitude", values.longitude);
+    if (property) formData.set("propertyId", property.id);
+
+    try {
+      const result = await serverAction(undefined, formData);
+      if ("redirectTo" in result) {
+        notify.success(property ? "Property updated!" : "Property created!");
+        router.push(result.redirectTo);
+        return;
+      }
+      Object.entries(result.errors).forEach(([key, message]) => {
+        if (key === "imageUrl") {
+          setImageUrlError(message);
+        } else {
+          setError(key as keyof FormValues, { message });
+        }
+      });
+    } catch {
+      setError("root", { message: "Something went wrong. Please try again." });
+    }
+  }
+
+  return (
+    <form id="new-property-form" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-12">
         {/* Left column */}
         <div className="space-y-8 xl:col-span-8">
@@ -97,19 +189,20 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
           <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-nordic-muted/10">
             <SectionHeader icon={Info} title="Basic Information" />
             <div className="space-y-6 p-8">
+              {errors.root && <p className={errorClass}>{errors.root.message}</p>}
+
               <div>
                 <label htmlFor="title" className={labelClass}>
                   Property Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="title"
-                  name="title"
                   type="text"
                   placeholder="e.g. Modern Penthouse with Ocean View"
-                  defaultValue={property?.title ?? ""}
                   className={inputClass}
+                  {...register("title")}
                 />
-                {state.errors.title && <p className={errorClass}>{state.errors.title}</p>}
+                {errors.title && <p className={errorClass}>{errors.title.message}</p>}
               </div>
 
               <div>
@@ -118,15 +211,12 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                 </label>
                 <textarea
                   id="description"
-                  name="description"
                   rows={4}
                   placeholder="Describe the property in detail — location highlights, finishes, amenities…"
-                  defaultValue={property?.description ?? ""}
                   className={inputClass + " resize-none"}
+                  {...register("description")}
                 />
-                {state.errors.description && (
-                  <p className={errorClass}>{state.errors.description}</p>
-                )}
+                {errors.description && <p className={errorClass}>{errors.description.message}</p>}
                 <p className="mt-1 text-xs text-nordic/40 dark:text-clear-day/40">
                   Min 20 characters · max 1000
                 </p>
@@ -143,27 +233,21 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                     </span>
                     <input
                       id="price"
-                      name="price"
                       type="number"
                       min="0"
                       placeholder="0"
-                      defaultValue={property?.price ?? ""}
                       className={inputClass + " pl-7"}
+                      {...register("price")}
                     />
                   </div>
-                  {state.errors.price && <p className={errorClass}>{state.errors.price}</p>}
+                  {errors.price && <p className={errorClass}>{errors.price.message}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="priceType" className={labelClass}>
                     Listing Type
                   </label>
-                  <select
-                    id="priceType"
-                    name="priceType"
-                    defaultValue={property?.priceType ?? "sale"}
-                    className={selectClass}
-                  >
+                  <select id="priceType" className={selectClass} {...register("priceType")}>
                     <option value="sale">For Sale</option>
                     <option value="rent">For Rent</option>
                   </select>
@@ -173,12 +257,7 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                   <label htmlFor="type" className={labelClass}>
                     Property Type
                   </label>
-                  <select
-                    id="type"
-                    name="type"
-                    defaultValue={property?.type ?? "House"}
-                    className={selectClass}
-                  >
+                  <select id="type" className={selectClass} {...register("type")}>
                     <option value="House">House</option>
                     <option value="Apartment">Apartment</option>
                     <option value="Villa">Villa</option>
@@ -192,12 +271,7 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                   <label htmlFor="badge" className={labelClass}>
                     Badge
                   </label>
-                  <select
-                    id="badge"
-                    name="badge"
-                    defaultValue={property?.badge ?? ""}
-                    className={selectClass}
-                  >
+                  <select id="badge" className={selectClass} {...register("badge")}>
                     <option value="">None</option>
                     <option value="Exclusive">Exclusive</option>
                     <option value="New Arrival">New Arrival</option>
@@ -209,9 +283,8 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                   <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
-                      name="isFeatured"
-                      defaultChecked={property?.isFeatured ?? false}
                       className="h-4 w-4 rounded border-gray-300 text-mosque focus:ring-mosque"
+                      {...register("isFeatured")}
                     />
                     <span className="text-sm font-medium text-nordic dark:text-clear-day">
                       Featured property
@@ -229,9 +302,9 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
               <ImageGalleryUploader
                 imageUrl={imageUrl}
                 images={images}
-                onImageUrlChange={setImageUrl}
+                onImageUrlChange={handleImageUrlChange}
                 onImagesChange={setImages}
-                imageUrlError={state.errors.imageUrl}
+                imageUrlError={imageUrlError}
               />
               <div>
                 <label htmlFor="imageAlt" className={labelClass}>
@@ -239,11 +312,10 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                 </label>
                 <input
                   id="imageAlt"
-                  name="imageAlt"
                   type="text"
                   placeholder="e.g. Front view of the property"
-                  defaultValue={property?.imageAlt ?? ""}
                   className={inputClass}
+                  {...register("imageAlt")}
                 />
               </div>
             </div>
@@ -262,13 +334,12 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                 </label>
                 <input
                   id="address"
-                  name="address"
                   type="text"
                   placeholder="Street address"
-                  defaultValue={property?.address ?? ""}
                   className={inputClass}
+                  {...register("address")}
                 />
-                {state.errors.address && <p className={errorClass}>{state.errors.address}</p>}
+                {errors.address && <p className={errorClass}>{errors.address.message}</p>}
               </div>
               <div>
                 <label htmlFor="city" className={labelClass}>
@@ -276,13 +347,46 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                 </label>
                 <input
                   id="city"
-                  name="city"
                   type="text"
                   placeholder="City"
-                  defaultValue={property?.city ?? ""}
                   className={inputClass}
+                  {...register("city")}
                 />
-                {state.errors.city && <p className={errorClass}>{state.errors.city}</p>}
+                {errors.city && <p className={errorClass}>{errors.city.message}</p>}
+              </div>
+              <div>
+                <p className={labelClass}>
+                  Coordinates{" "}
+                  <span className="font-normal text-nordic/40 dark:text-clear-day/40">
+                    (optional)
+                  </span>
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      placeholder="40.4168"
+                      className={inputClass}
+                      {...register("latitude")}
+                    />
+                    {errors.latitude && <p className={errorClass}>{errors.latitude.message}</p>}
+                    <p className="mt-1 text-xs text-nordic/40 dark:text-clear-day/40">Latitude</p>
+                  </div>
+                  <div>
+                    <input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      placeholder="-3.7038"
+                      className={inputClass}
+                      {...register("longitude")}
+                    />
+                    {errors.longitude && <p className={errorClass}>{errors.longitude.message}</p>}
+                    <p className="mt-1 text-xs text-nordic/40 dark:text-clear-day/40">Longitude</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -297,14 +401,13 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
                 </label>
                 <input
                   id="sqm"
-                  name="sqm"
                   type="number"
                   min="1"
                   placeholder="0"
-                  defaultValue={property?.sqm ?? ""}
                   className={inputClass}
+                  {...register("sqm")}
                 />
-                {state.errors.sqm && <p className={errorClass}>{state.errors.sqm}</p>}
+                {errors.sqm && <p className={errorClass}>{errors.sqm.message}</p>}
               </div>
 
               <hr className="border-nordic/5 dark:border-white/5" />
@@ -329,10 +432,10 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
         </button>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isSubmitting}
           className="flex-1 rounded-lg bg-mosque py-3 text-sm font-medium text-white transition-colors hover:bg-nordic disabled:opacity-60 dark:bg-hint-green dark:text-nordic"
         >
-          {isPending ? "Saving…" : "Save"}
+          {isSubmitting ? "Saving…" : "Save"}
         </button>
       </div>
 

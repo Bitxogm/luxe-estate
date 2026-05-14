@@ -76,6 +76,7 @@ export default function ScheduleVisitForm({ propertyId, propertySlug }: Props) {
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
   const [state, action, isPending] = useActionState(scheduleVisit, initialState);
 
   const calDays = getCalendarDays(viewDate.getFullYear(), viewDate.getMonth());
@@ -209,6 +210,8 @@ export default function ScheduleVisitForm({ propertyId, propertySlug }: Props) {
             name="message"
             rows={3}
             placeholder="Any specific questions or requests?"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
             className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-nordic placeholder-slate-400 outline-none transition-shadow focus:border-mosque focus:ring-1 focus:ring-mosque dark:border-white/10 dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:border-hint-green dark:focus:ring-hint-green"
           />
         </div>

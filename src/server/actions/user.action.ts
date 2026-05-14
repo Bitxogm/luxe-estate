@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import * as repo from "@/server/repositories/user.repository";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 const nameSchema = z.string().min(2, "Name must be at least 2 characters").max(100);
 
@@ -33,6 +34,54 @@ export async function updateUserAvatarAction(
   revalidatePath("/profile");
   revalidatePath("/", "layout");
   return { success: true, image: user.image ?? "" };
+}
+
+export async function changePasswordAction(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ success: true } | { success: false; error: string; field?: "currentPassword" }> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthenticated" };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { passwordHash: true },
+  });
+
+  if (!user?.passwordHash) {
+    return { success: false, error: "No password set on this account (OAuth login)" };
+  }
+
+  const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isValid) {
+    return { success: false, error: "Current password is incorrect", field: "currentPassword" };
+  }
+
+  const hash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { passwordHash: hash },
+  });
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
+export async function deleteAccountAction(): Promise<
+  { success: true } | { success: false; error: string }
+> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthenticated" };
+
+  const userId = session.user.id;
+
+  // Properties must be deleted before the user (no onDelete: Cascade on Property.userId)
+  await prisma.property.deleteMany({ where: { userId } });
+
+  // User delete cascades: Account, Session, SavedProperty, Visit
+  await prisma.user.delete({ where: { id: userId } });
+
+  return { success: true };
 }
 
 const VALID_ROLES = ["user", "admin"] as const;

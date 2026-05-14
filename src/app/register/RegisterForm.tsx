@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,15 +22,39 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
+const schema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+  password: z
+    .string()
+    .min(8, "At least 8 characters")
+    .regex(/[A-Z]/, "At least one uppercase letter")
+    .regex(/[0-9]/, "At least one number"),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+const inputClass =
+  "block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green";
+
 export default function RegisterForm() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [loading, setLoading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
+
+  const watchedName = watch("name");
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -47,10 +74,7 @@ export default function RegisterForm() {
     }
   }
 
-  async function handleSubmit(e: React.BaseSyntheticEvent) {
-    e.preventDefault();
-    setLoading(true);
-
+  async function onSubmit({ name, email, password }: FormValues) {
     const result = await registerUser({
       name,
       email,
@@ -59,18 +83,11 @@ export default function RegisterForm() {
     });
 
     if (result.error) {
-      notify.error(result.error);
-      setLoading(false);
+      setError("root", { message: result.error });
       return;
     }
 
-    const signInResult = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    setLoading(false);
+    const signInResult = await signIn("credentials", { email, password, redirect: false });
 
     if (signInResult?.error) {
       notify.error("Account created but could not sign in. Please log in manually.");
@@ -102,7 +119,7 @@ export default function RegisterForm() {
 
       {/* Form card */}
       <div className="overflow-hidden rounded-2xl border border-nordic/10 bg-white shadow-soft dark:border-white/10 dark:bg-nordic-muted/20">
-        <form onSubmit={handleSubmit} className="space-y-5 p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-8">
           {/* Avatar picker */}
           <div className="flex flex-col items-center gap-3">
             <button
@@ -121,7 +138,7 @@ export default function RegisterForm() {
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center rounded-full border-4 border-dashed border-nordic/20 bg-clear-day text-lg font-bold text-nordic/40 transition-colors hover:border-mosque hover:bg-hint-green/20 dark:border-white/20 dark:bg-white/5 dark:hover:border-hint-green">
-                  {name ? getInitials(name) : <Camera size={22} />}
+                  {watchedName ? getInitials(watchedName) : <Camera size={22} />}
                 </div>
               )}
               {isUploadingAvatar && (
@@ -153,13 +170,11 @@ export default function RegisterForm() {
               id="name"
               type="text"
               autoComplete="name"
-              required
-              minLength={2}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="Jane Doe"
-              className="block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green"
+              className={inputClass}
+              {...register("name")}
             />
+            {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -173,12 +188,11 @@ export default function RegisterForm() {
               id="email"
               type="email"
               autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green"
+              className={inputClass}
+              {...register("email")}
             />
+            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -192,20 +206,25 @@ export default function RegisterForm() {
               id="password"
               type="password"
               autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="Min 8 chars, 1 uppercase, 1 number"
-              className="block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green"
+              className={inputClass}
+              {...register("password")}
             />
+            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
           </div>
+
+          {errors.root && (
+            <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400">
+              {errors.root.message}
+            </p>
+          )}
 
           <button
             type="submit"
-            disabled={loading || isUploadingAvatar}
+            disabled={isSubmitting || isUploadingAvatar}
             className="w-full rounded-lg bg-mosque py-3 text-sm font-medium text-white shadow-md shadow-mosque/20 transition-all hover:-translate-y-0.5 hover:bg-mosque/90 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60"
           >
-            {loading ? "Creating account…" : "Create account"}
+            {isSubmitting ? "Creating account…" : "Create account"}
           </button>
         </form>
 

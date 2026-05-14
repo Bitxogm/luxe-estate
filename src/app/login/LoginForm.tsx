@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -10,38 +12,46 @@ import { notify } from "@/lib/toast";
 const IS_DEV = process.env.NODE_ENV === "development";
 
 const DEV_USERS = [
-  { label: "Dev User", email: "dev@luxe.com", password: "Dev12345" },
-  { label: "Admin", email: "admin@luxe.com", password: "Admin12345" },
+  { label: "Dev User", email: "dev@luxe.com", password: "Dev12345" }, // nosec
+  { label: "Admin", email: "admin@luxe.com", password: "Admin12345" }, // nosec
 ] as const;
+
+const schema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+const inputClass =
+  "block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
+  });
 
   function fillUser(email: string, password: string) {
-    setEmail(email);
-    setPassword(password);
+    setValue("email", email);
+    setValue("password", password);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    setLoading(false);
+  async function onSubmit({ email, password }: FormValues) {
+    const result = await signIn("credentials", { email, password, redirect: false });
 
     if (result?.error) {
-      notify.error("Invalid email or password.");
+      setError("root", { message: "Invalid email or password." });
       return;
     }
 
@@ -69,7 +79,7 @@ export default function LoginForm() {
 
       {/* Form card */}
       <div className="overflow-hidden rounded-2xl border border-nordic/10 bg-white shadow-soft dark:border-white/10 dark:bg-nordic-muted/20">
-        <form onSubmit={handleSubmit} className="space-y-5 p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-8">
           <div className="space-y-1.5">
             <label
               htmlFor="email"
@@ -81,12 +91,11 @@ export default function LoginForm() {
               id="email"
               type="email"
               autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green"
+              className={inputClass}
+              {...register("email")}
             />
+            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -100,20 +109,25 @@ export default function LoginForm() {
               id="password"
               type="password"
               autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="block w-full rounded-lg border-none bg-clear-day px-4 py-3 text-sm text-nordic placeholder-nordic/30 outline-none ring-2 ring-transparent transition-all focus:ring-mosque dark:bg-white/5 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:ring-hint-green"
+              className={inputClass}
+              {...register("password")}
             />
+            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
           </div>
+
+          {errors.root && (
+            <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400">
+              {errors.root.message}
+            </p>
+          )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="w-full rounded-lg bg-mosque py-3 text-sm font-medium text-white shadow-md shadow-mosque/20 transition-all hover:-translate-y-0.5 hover:bg-mosque/90 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {isSubmitting ? "Signing in…" : "Sign in"}
           </button>
         </form>
 

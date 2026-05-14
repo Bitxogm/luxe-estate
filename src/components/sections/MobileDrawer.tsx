@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X, Building2, LogOut, User, LayoutDashboard, Shield } from "lucide-react";
+import {
+  Menu,
+  X,
+  Building2,
+  LogOut,
+  User,
+  LayoutDashboard,
+  Shield,
+  PlusCircle,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { notify } from "@/lib/toast";
@@ -15,13 +25,6 @@ interface DrawerUser {
 interface MobileDrawerProps {
   user?: DrawerUser | null;
 }
-
-const NAV_LINKS = [
-  { href: "/?priceType=sale", label: "Buy" },
-  { href: "/?priceType=rent", label: "Rent" },
-  { href: "/properties/new", label: "Sell" },
-  { href: "/favorites", label: "Saved Homes" },
-] as const;
 
 export default function MobileDrawer({ user }: MobileDrawerProps) {
   const [open, setOpen] = useState(false);
@@ -54,22 +57,24 @@ export default function MobileDrawer({ user }: MobileDrawerProps) {
     window.location.href = "/";
   }
 
+  const close = () => setOpen(false);
+
   return (
     <>
-      {/* Hamburger button — mobile only */}
+      {/* Hamburger — mobile only */}
       <button
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className="flex items-center justify-center rounded-lg p-1.5 text-nordic transition-colors hover:bg-nordic/5 dark:text-clear-day dark:hover:bg-white/5 md:hidden"
+        className="flex items-center justify-center rounded-lg p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white md:hidden"
       >
         <Menu size={22} />
       </button>
 
       {/* Overlay */}
       <div
-        onClick={() => setOpen(false)}
+        onClick={close}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-nordic/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 z-40 bg-nordic/70 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -84,36 +89,49 @@ export default function MobileDrawer({ user }: MobileDrawerProps) {
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-clear-day">
-              <Building2 size={15} className="text-nordic" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10">
+              <Building2 size={15} className="text-white" />
             </div>
-            <span className="font-sf text-base font-semibold tracking-tight text-clear-day">
+            <span className="font-sf text-base font-semibold tracking-tight text-white">
               LuxeEstate
             </span>
           </div>
           <button
-            onClick={() => setOpen(false)}
+            onClick={close}
             aria-label="Close menu"
-            className="rounded-lg p-1.5 text-clear-day/60 transition-colors hover:bg-white/10 hover:text-clear-day"
+            className="rounded-lg p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Nav links */}
+        {/* Nav links — always visible */}
         <nav className="border-b border-white/10 py-2">
-          {NAV_LINKS.map(({ href, label }) => (
+          <Link
+            href="/?priceType=sale"
+            onClick={close}
+            className="block px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Buy
+          </Link>
+          <Link
+            href="/?priceType=rent"
+            onClick={close}
+            className="block px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Rent
+          </Link>
+          {user && (
             <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className="block px-6 py-3.5 text-sm font-medium text-clear-day/70 transition-colors hover:bg-white/5 hover:text-clear-day"
+              href="/properties/new"
+              onClick={close}
+              className="block px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
             >
-              {label}
+              Sell
             </Link>
-          ))}
+          )}
         </nav>
 
         {/* User section */}
@@ -126,58 +144,76 @@ export default function MobileDrawer({ user }: MobileDrawerProps) {
                   {initials}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-clear-day">
-                    {user.name ?? "User"}
-                  </p>
-                  <p className="truncate text-xs text-clear-day/50">{user.email}</p>
+                  <p className="truncate text-sm font-medium text-white">{user.name ?? "User"}</p>
+                  <p className="truncate text-xs text-white/40">{user.email}</p>
                 </div>
               </div>
 
               <Link
                 href="/profile"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-clear-day/70 transition-colors hover:bg-white/5 hover:text-clear-day"
+                onClick={close}
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
               >
-                <User size={15} /> Profile
+                <User size={15} /> My Profile
               </Link>
               <Link
                 href="/dashboard"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-clear-day/70 transition-colors hover:bg-white/5 hover:text-clear-day"
+                onClick={close}
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
               >
-                <LayoutDashboard size={15} /> My Properties
+                <LayoutDashboard size={15} /> My Dashboard
               </Link>
               {user.role === "admin" && (
                 <Link
                   href="/admin/users"
-                  onClick={() => setOpen(false)}
+                  onClick={close}
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-hint-green transition-colors hover:bg-hint-green/5"
                 >
                   <Shield size={15} /> Admin Panel
                 </Link>
               )}
-              <button
-                onClick={handleSignOut}
-                className="mt-2 flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-red-400 transition-colors hover:bg-red-500/10"
+              <Link
+                href="/properties/new"
+                onClick={close}
+                className="flex items-center justify-center gap-2 rounded-lg bg-mosque px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mosque/90"
               >
-                <LogOut size={15} /> Sign out
-              </button>
+                <PlusCircle size={15} /> List Property
+              </Link>
+
+              <div className="border-t border-white/10 pt-1">
+                <Link
+                  href="/profile?tab=settings"
+                  onClick={close}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <Settings size={15} /> Account Settings
+                </Link>
+              </div>
+
+              <div className="border-t border-white/10 pt-1">
+                <button
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-red-400 transition-colors hover:bg-red-500/10"
+                >
+                  <LogOut size={15} /> Sign out
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               <Link
                 href="/login"
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className="block rounded-lg bg-mosque px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-mosque/90"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                onClick={() => setOpen(false)}
-                className="block rounded-lg border border-white/20 px-4 py-2.5 text-center text-sm font-medium text-clear-day transition-colors hover:bg-white/5"
+                onClick={close}
+                className="block rounded-lg border border-white/20 px-4 py-2.5 text-center text-sm font-medium text-white/80 transition-colors hover:border-white hover:text-white"
               >
-                Create account
+                Register
               </Link>
             </div>
           )}

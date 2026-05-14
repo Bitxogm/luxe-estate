@@ -31,6 +31,7 @@ export const createPropertySchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     .min(1)
     .max(200),
+  userId: z.string(),
   title: z.string().min(1).max(200),
   address: z.string().min(1).max(300),
   city: z.string().min(1).max(100),
@@ -47,6 +48,8 @@ export const createPropertySchema = z.object({
   imageAlt: z.string().min(1).max(200),
   images: z.array(z.string().url()).optional().default([]),
   isFeatured: z.boolean().default(false),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
 });
 
 export const updatePropertySchema = createPropertySchema.partial();

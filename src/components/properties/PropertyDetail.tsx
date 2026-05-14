@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Bath, BedDouble, Ruler, MapPin, ArrowLeft } from "lucide-react";
 import PropertyActions from "./PropertyActions";
 import PropertyGallery from "./PropertyGallery";
+import PropertyMapWrapper from "./PropertyMapWrapper";
 
 interface PropertyDetailProps {
   property: Property;
@@ -110,8 +111,31 @@ export default function PropertyDetail({ property, isOwner }: PropertyDetailProp
             </div>
           )}
 
+          {/* Location map */}
+          {property.latitude && property.longitude && (
+            <div className="mb-8">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-nordic/40 dark:text-clear-day/40">
+                Location
+              </h2>
+              <p className="mb-3 flex items-center gap-1.5 text-sm text-nordic-muted dark:text-clear-day/60">
+                <MapPin size={14} />
+                {property.address}, {property.city}
+              </p>
+              <PropertyMapWrapper
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={property.address}
+              />
+            </div>
+          )}
+
           {/* CTA */}
-          <PropertyActions isRent={isRent} propertySlug={property.slug} isOwner={isOwner} />
+          <PropertyActions
+            isRent={isRent}
+            propertySlug={property.slug}
+            propertyId={property.id}
+            isOwner={isOwner}
+          />
         </div>
       </div>
     </div>

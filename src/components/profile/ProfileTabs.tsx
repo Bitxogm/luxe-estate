@@ -6,7 +6,8 @@ import PropertyCard from "@/components/ui/PropertyCard";
 import PreferencesForm from "@/components/profile/PreferencesForm";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, MapPin, Clock } from "lucide-react";
+import { Calendar, MapPin, Clock, Heart, Settings } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 type VisitWithProperty = Prisma.VisitGetPayload<{ include: { property: true } }>;
 type Tab = "saved" | "visits" | "settings";
@@ -17,12 +18,13 @@ interface ProfileTabsProps {
   name: string;
   email: string;
   image?: string | null;
+  defaultTab?: Tab;
 }
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "saved", label: "Saved Properties" },
-  { id: "visits", label: "Scheduled Visits" },
-  { id: "settings", label: "Preferences & Settings" },
+const TABS: { id: Tab; label: string; Icon: LucideIcon }[] = [
+  { id: "saved", label: "Saved Properties", Icon: Heart },
+  { id: "visits", label: "Scheduled Visits", Icon: Calendar },
+  { id: "settings", label: "Account Settings", Icon: Settings },
 ];
 
 const STATUS_STYLES: Record<string, string> = {
@@ -37,23 +39,25 @@ export default function ProfileTabs({
   name,
   email,
   image,
+  defaultTab,
 }: ProfileTabsProps) {
-  const [active, setActive] = useState<Tab>("saved");
+  const [active, setActive] = useState<Tab>(defaultTab ?? "saved");
 
   return (
     <>
-      <div className="mb-10 flex items-center gap-8 overflow-x-auto border-b border-nordic/10 dark:border-white/10">
-        {TABS.map((tab) => (
+      <div className="mb-10 flex items-center gap-1 overflow-x-auto rounded-xl border border-nordic/10 bg-white p-1.5 shadow-sm dark:border-white/5 dark:bg-white/5">
+        {TABS.map(({ id, label, Icon }) => (
           <button
-            key={tab.id}
-            onClick={() => setActive(tab.id)}
-            className={`whitespace-nowrap border-b-2 px-2 pb-4 text-sm font-medium transition-colors ${
-              active === tab.id
-                ? "border-mosque text-nordic dark:border-hint-green dark:text-clear-day"
-                : "border-transparent text-nordic/50 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/50 dark:hover:text-clear-day"
+            key={id}
+            onClick={() => setActive(id)}
+            className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+              active === id
+                ? "bg-mosque text-white shadow-sm dark:bg-hint-green dark:text-nordic"
+                : "text-nordic/60 hover:bg-nordic/5 hover:text-nordic dark:text-clear-day/50 dark:hover:bg-white/5 dark:hover:text-clear-day"
             }`}
           >
-            {tab.label}
+            <Icon size={15} />
+            {label}
           </button>
         ))}
       </div>

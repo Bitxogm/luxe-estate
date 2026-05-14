@@ -41,6 +41,13 @@ export default async function PropertyPage({ params }: Props) {
   const isOwner =
     !!session?.user?.id && (session.user.id === property.userId || session.user.role === "admin");
 
+  console.log("DEBUG isOwner:", {
+    sessionUserId: session?.user?.id,
+    propertyUserId: property.userId,
+    role: session?.user?.role,
+    isOwner,
+  });
+
   return (
     <>
       <Navbar />

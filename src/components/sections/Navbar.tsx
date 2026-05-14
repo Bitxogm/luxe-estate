@@ -1,84 +1,115 @@
-import { Building2, Search, Bell } from "lucide-react";
+import { Building2, Bell, Heart } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { auth } from "@/auth";
 import NavbarUserMenu from "./NavbarUserMenu";
+import NavbarSearch from "./NavbarSearch";
 import MobileDrawer from "./MobileDrawer";
 
 export default async function Navbar() {
   const session = await auth();
+  const user = session?.user ?? null;
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-nordic/10 bg-clear-day/95 backdrop-blur-md transition-colors duration-300 dark:border-clear-day/10 dark:bg-nordic/95">
+    <nav className="sticky top-0 z-50 bg-nordic">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
-          <div className="flex flex-shrink-0 cursor-pointer items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-nordic transition-colors dark:bg-clear-day">
-              <Building2 size={18} className="text-white dark:text-nordic" />
+        <div className="flex h-16 items-center justify-between">
+          {/* Left — logo */}
+          <Link href="/" className="flex flex-shrink-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+              <Building2 size={18} className="text-white" />
             </div>
-            <span className="font-sf text-xl font-semibold tracking-tight text-nordic transition-colors dark:text-white">
+            <span className="font-sf text-lg font-semibold tracking-tight text-white">
               LuxeEstate
             </span>
-          </div>
+          </Link>
 
-          <div className="hidden items-center space-x-8 md:flex">
+          {/* Center — nav links (desktop) */}
+          <div className="hidden items-center gap-8 md:flex">
             <Link
               href="/?priceType=sale"
-              className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
+              className="text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
               Buy
             </Link>
             <Link
               href="/?priceType=rent"
-              className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
+              className="text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
               Rent
             </Link>
-            <Link
-              href="/properties/new"
-              className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
-            >
-              Sell
-            </Link>
-            <Link
-              href="/favorites"
-              className="px-1 py-1 text-sm font-medium text-nordic/70 transition-all hover:border-b-2 hover:border-nordic/20 hover:text-nordic dark:text-clear-day/70 dark:hover:border-clear-day/20 dark:hover:text-clear-day"
-            >
-              Saved Homes
-            </Link>
+            {user && (
+              <Link
+                href="/properties/new"
+                className="text-sm font-medium text-white/70 transition-colors hover:text-white"
+              >
+                Sell
+              </Link>
+            )}
           </div>
 
-          <div className="flex items-center space-x-6">
-            <button className="text-nordic transition-colors hover:text-mosque dark:text-clear-day dark:hover:text-hint-green">
-              <Search size={20} />
-            </button>
-            <button className="relative text-nordic transition-colors hover:text-mosque dark:text-clear-day dark:hover:text-hint-green">
-              <Bell size={20} />
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-clear-day bg-red-500 transition-colors dark:border-nordic" />
-            </button>
+          {/* Right — icons + auth */}
+          <div className="flex items-center gap-5">
+            {/* Search */}
+            <NavbarSearch />
+
+            {/* Bell — coming soon */}
+            <div className="group relative hidden md:block">
+              <button
+                aria-label="Notifications"
+                className="relative text-white/70 transition-colors hover:text-white"
+              >
+                <Bell size={19} />
+                <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-hint-green" />
+              </button>
+              <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/10 px-2 py-1 text-xs text-white/80 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+                Coming soon
+              </span>
+            </div>
+
+            {/* Heart — favorites */}
+            {user && (
+              <Link
+                href="/favorites"
+                aria-label="Saved homes"
+                className="hidden text-white/70 transition-colors hover:text-white md:block"
+              >
+                <Heart size={19} />
+              </Link>
+            )}
+
             <ThemeToggle />
-            <div className="ml-2 hidden border-l border-nordic/10 pl-4 dark:border-clear-day/10 md:flex md:items-center">
-              {session?.user ? (
+
+            {/* Auth */}
+            <div className="hidden items-center gap-2 border-l border-white/10 pl-4 md:flex">
+              {user ? (
                 <NavbarUserMenu
-                  name={session.user.name}
-                  email={session.user.email}
-                  role={session.user.role}
-                  image={session.user.image}
+                  name={user.name}
+                  email={user.email}
+                  role={user.role}
+                  image={user.image}
                 />
               ) : (
-                <Link
-                  href="/login"
-                  className="rounded-lg bg-mosque px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-mosque/90"
-                >
-                  Sign in
-                </Link>
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-lg bg-mosque px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-mosque/90"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-lg border border-white/20 px-4 py-1.5 text-sm font-medium text-white/80 transition-colors hover:border-white hover:text-white"
+                  >
+                    Register
+                  </Link>
+                </>
               )}
             </div>
+
+            {/* Mobile hamburger */}
             <MobileDrawer
-              user={
-                session?.user
-                  ? { name: session.user.name, email: session.user.email, role: session.user.role }
-                  : null
-              }
+              user={user ? { name: user.name, email: user.email, role: user.role } : null}
             />
           </div>
         </div>

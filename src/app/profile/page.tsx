@@ -12,9 +12,19 @@ export const metadata: Metadata = {
   title: "My Profile — Luxe Estate",
 };
 
-export default async function ProfilePage() {
+interface Props {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+const VALID_TABS = ["saved", "visits", "settings"] as const;
+type ValidTab = (typeof VALID_TABS)[number];
+
+export default async function ProfilePage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/profile");
+
+  const { tab } = await searchParams;
+  const defaultTab: ValidTab = VALID_TABS.includes(tab as ValidTab) ? (tab as ValidTab) : "saved";
 
   const [user, savedProperties, visits] = await Promise.all([
     userRepo.findUserById(session.user.id),
@@ -42,6 +52,7 @@ export default async function ProfilePage() {
           name={user.name ?? ""}
           email={user.email}
           image={user.image}
+          defaultTab={defaultTab}
         />
       </main>
     </>
