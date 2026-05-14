@@ -37,6 +37,14 @@ export async function createPropertyAction(
   if (!raw.badge) delete raw.badge;
   if (!raw.description) delete raw.description;
 
+  let images: string[] = [];
+  try {
+    const imagesRaw = formData.get("images");
+    if (typeof imagesRaw === "string" && imagesRaw) images = JSON.parse(imagesRaw);
+  } catch {
+    images = [];
+  }
+
   const result = formSchema.safeParse(raw);
   if (!result.success) {
     const errors: Record<string, string> = {};
@@ -61,6 +69,7 @@ export async function createPropertyAction(
     badge: data.badge ?? undefined,
     isFeatured: data.isFeatured ?? false,
     imageAlt: data.imageAlt || data.title,
+    images,
   });
 
   redirect(`/properties/${property.slug}`);
@@ -86,6 +95,14 @@ export async function updatePropertyAction(
   if (!raw.badge) delete raw.badge;
   if (!raw.description) delete raw.description;
 
+  let images: string[] = [];
+  try {
+    const imagesRaw = formData.get("images");
+    if (typeof imagesRaw === "string" && imagesRaw) images = JSON.parse(imagesRaw);
+  } catch {
+    images = [];
+  }
+
   const result = formSchema.safeParse(raw);
   if (!result.success) {
     const errors: Record<string, string> = {};
@@ -102,6 +119,7 @@ export async function updatePropertyAction(
     ...data,
     status,
     badge: data.badge ?? undefined,
+    images,
   });
 
   redirect(`/properties/${existing.slug}`);

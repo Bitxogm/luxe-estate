@@ -1,24 +1,11 @@
 "use client";
 
-import { useActionState, useState, useRef } from "react";
+import { useActionState, useState } from "react";
 import { createPropertyAction, updatePropertyAction } from "@/server/actions/property.action";
-import { uploadPropertyImageAction } from "@/server/actions/upload.action";
-import {
-  Minus,
-  Plus,
-  BedDouble,
-  Bath,
-  Ruler,
-  MapPin,
-  ImageIcon,
-  Info,
-  Upload,
-  X,
-  Loader2,
-} from "lucide-react";
-import Image from "next/image";
+import { Minus, Plus, BedDouble, Bath, Ruler, MapPin, ImageIcon, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Property } from "@prisma/client";
+import ImageGalleryUploader from "@/components/properties/ImageGalleryUploader";
 
 const inputClass =
   "w-full rounded-lg border border-nordic/10 bg-white px-4 py-2.5 text-sm text-nordic placeholder-nordic/30 outline-none transition-all focus:border-mosque focus:ring-1 focus:ring-mosque dark:border-white/10 dark:bg-nordic-muted/20 dark:text-clear-day dark:placeholder-clear-day/30 dark:focus:border-hint-green dark:focus:ring-hint-green";
@@ -92,55 +79,16 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
   const [beds, setBeds] = useState(property?.beds ?? 1);
   const [baths, setBaths] = useState(property?.baths ?? 1);
   const [imageUrl, setImageUrl] = useState(property?.imageUrl ?? "");
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [images, setImages] = useState<string[]>(property?.images ?? []);
   const router = useRouter();
-
-  async function handleImageFile(file: File) {
-    setIsUploadingImage(true);
-    setImageUploadError(null);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const result = await uploadPropertyImageAction(formData);
-    setIsUploadingImage(false);
-
-    if ("error" in result) {
-      setImageUploadError(result.error);
-    } else {
-      setImageUrl(result.url);
-    }
-  }
-
-  function handleImageInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) handleImageFile(file);
-  }
-
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    setIsDragging(true);
-  }
-
-  function handleDragLeave() {
-    setIsDragging(false);
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleImageFile(file);
-  }
 
   return (
     <form id="new-property-form" action={action}>
       {property && <input type="hidden" name="propertyId" value={property.id} />}
       <input type="hidden" name="beds" value={beds} />
       <input type="hidden" name="baths" value={baths} />
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+      <input type="hidden" name="images" value={JSON.stringify(images)} />
 
       <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-12">
         {/* Left column */}
@@ -274,77 +222,20 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
             </div>
           </div>
 
-          {/* Image upload */}
+          {/* Images */}
           <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-nordic-muted/10">
-            <SectionHeader icon={ImageIcon} title="Main Image" />
+            <SectionHeader icon={ImageIcon} title="Photos" />
             <div className="space-y-4 p-8">
-              <input type="hidden" name="imageUrl" value={imageUrl} />
-
-              {imageUrl ? (
-                <div className="relative overflow-hidden rounded-lg">
-                  <Image
-                    src={imageUrl}
-                    alt="Property preview"
-                    width={800}
-                    height={450}
-                    className="h-56 w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageUrl("");
-                      setImageUploadError(null);
-                      if (imageInputRef.current) imageInputRef.current.value = "";
-                    }}
-                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-nordic/80 text-white transition-colors hover:bg-nordic"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => imageInputRef.current?.click()}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  disabled={isUploadingImage}
-                  className={`flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed py-12 transition-colors ${
-                    isDragging
-                      ? "border-mosque bg-hint-green/20"
-                      : "border-nordic/20 bg-clear-day hover:bg-hint-green/20 dark:border-white/10 dark:bg-white/5 dark:hover:bg-hint-green/10"
-                  } disabled:opacity-60`}
-                >
-                  {isUploadingImage ? (
-                    <Loader2 size={28} className="animate-spin text-mosque dark:text-hint-green" />
-                  ) : (
-                    <Upload size={28} className="text-nordic/40 dark:text-clear-day/40" />
-                  )}
-                  <span className="text-sm font-medium text-nordic dark:text-clear-day">
-                    {isUploadingImage ? "Uploading…" : "Click to upload or drag & drop"}
-                  </span>
-                  {!isUploadingImage && (
-                    <span className="text-xs text-nordic/40 dark:text-clear-day/40">
-                      JPG, PNG or WebP — max 5MB
-                    </span>
-                  )}
-                </button>
-              )}
-
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleImageInputChange}
+              <ImageGalleryUploader
+                imageUrl={imageUrl}
+                images={images}
+                onImageUrlChange={setImageUrl}
+                onImagesChange={setImages}
+                imageUrlError={state.errors.imageUrl}
               />
-
-              {imageUploadError && <p className={errorClass}>{imageUploadError}</p>}
-              {state.errors.imageUrl && <p className={errorClass}>{state.errors.imageUrl}</p>}
-
               <div>
                 <label htmlFor="imageAlt" className={labelClass}>
-                  Image description
+                  Main image description
                 </label>
                 <input
                   id="imageAlt"
@@ -445,7 +336,6 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
         </button>
       </div>
 
-      {/* Bottom padding for mobile bar */}
       <div className="h-24 md:hidden" />
     </form>
   );

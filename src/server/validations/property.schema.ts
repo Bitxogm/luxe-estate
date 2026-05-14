@@ -45,6 +45,7 @@ export const createPropertySchema = z.object({
   description: z.string().min(20, "Minimum 20 characters").max(1000).optional(),
   imageUrl: z.string().url(),
   imageAlt: z.string().min(1).max(200),
+  images: z.array(z.string().url()).optional().default([]),
   isFeatured: z.boolean().default(false),
 });
 
