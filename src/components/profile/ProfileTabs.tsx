@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Prisma, Property } from "@prisma/client";
 import PropertyCard from "@/components/ui/PropertyCard";
 import PreferencesForm from "@/components/profile/PreferencesForm";
+import VisitDepositButton from "@/components/profile/VisitDepositButton";
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, MapPin, Clock, Heart, Settings } from "lucide-react";
@@ -153,6 +154,11 @@ export default function ProfileTabs({
                           {timeLabel}
                         </span>
                       </div>
+                      {visit.status === "pending" && (
+                        <div onClick={(e) => e.preventDefault()}>
+                          <VisitDepositButton visitId={visit.id} />
+                        </div>
+                      )}
                     </div>
                   </Link>
                 );

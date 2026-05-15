@@ -6,6 +6,7 @@ import { findVisitsByUser } from "@/server/repositories/visit.repository";
 import Navbar from "@/components/sections/Navbar";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
+import PaymentSuccessToast from "@/components/ui/PaymentSuccessToast";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; deposit?: string }>;
 }
 
 const VALID_TABS = ["saved", "visits", "settings"] as const;
@@ -23,7 +24,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/profile");
 
-  const { tab } = await searchParams;
+  const { tab, deposit } = await searchParams;
   const defaultTab: ValidTab = VALID_TABS.includes(tab as ValidTab) ? (tab as ValidTab) : "saved";
 
   const [user, savedProperties, visits] = await Promise.all([
@@ -37,6 +38,9 @@ export default async function ProfilePage({ searchParams }: Props) {
   return (
     <>
       <Navbar />
+      {deposit === "success" && (
+        <PaymentSuccessToast message="Visit confirmed! Your deposit has been received." />
+      )}
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
         <ProfileHeader
           name={user.name ?? ""}

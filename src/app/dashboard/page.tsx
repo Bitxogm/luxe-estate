@@ -4,11 +4,25 @@ import {
   findPropertiesByUser,
   getUserPropertyStats,
 } from "@/server/repositories/property.repository";
+import { prisma } from "@/lib/prisma";
 import Navbar from "@/components/sections/Navbar";
 import DeletePropertyButton from "@/components/dashboard/DeletePropertyButton";
+import FeaturedButton from "@/components/dashboard/FeaturedButton";
+import ProButton from "@/components/dashboard/ProButton";
+import PaymentSuccessToast from "@/components/ui/PaymentSuccessToast";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, BedDouble, Bath, Ruler, Pencil, Building2, TrendingUp, Home } from "lucide-react";
+import {
+  Plus,
+  BedDouble,
+  Bath,
+  Ruler,
+  Pencil,
+  Building2,
+  TrendingUp,
+  Home,
+  Crown,
+} from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "My Dashboard — Luxe Estate" };
@@ -16,20 +30,23 @@ export const metadata: Metadata = { title: "My Dashboard — Luxe Estate" };
 const LIMIT = 8;
 
 interface Props {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; featured?: string; pro?: string }>;
 }
 
 export default async function DashboardPage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/dashboard");
 
-  const { page } = await searchParams;
+  const { page, featured, pro } = await searchParams;
   const currentPage = Math.max(1, Number(page) || 1);
 
-  const [{ properties, total }, stats] = await Promise.all([
+  const [{ properties, total }, stats, dbUser] = await Promise.all([
     findPropertiesByUser(session.user.id, currentPage, LIMIT),
     getUserPropertyStats(session.user.id),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { isPro: true, name: true } }),
   ]);
+
+  const isPro = dbUser?.isPro ?? false;
 
   const totalPages = Math.ceil(total / LIMIT);
   const from = total === 0 ? 0 : (currentPage - 1) * LIMIT + 1;
@@ -38,24 +55,39 @@ export default async function DashboardPage({ searchParams }: Props) {
   return (
     <>
       <Navbar />
+      {featured === "success" && <PaymentSuccessToast message="Your listing is now featured!" />}
+      {pro === "success" && (
+        <PaymentSuccessToast message="Welcome to Pro! Your account has been upgraded." />
+      )}
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-sf text-3xl font-bold tracking-tight text-nordic dark:text-clear-day">
-              My Properties
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="font-sf text-3xl font-bold tracking-tight text-nordic dark:text-clear-day">
+                My Properties
+              </h1>
+              {isPro && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-nordic px-2.5 py-1 text-xs font-semibold text-white dark:bg-hint-green dark:text-nordic">
+                  <Crown size={11} />
+                  Pro
+                </span>
+              )}
+            </div>
             <p className="mt-1 text-sm text-nordic/60 dark:text-clear-day/60">
               Manage your portfolio and track performance.
             </p>
           </div>
-          <Link
-            href="/properties/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-mosque px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-mosque/20 transition-all hover:-translate-y-0.5 hover:bg-mosque/90 hover:shadow-lg dark:bg-hint-green dark:text-nordic"
-          >
-            <Plus size={16} />
-            Add New Property
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {!isPro && <ProButton />}
+            <Link
+              href="/properties/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-mosque px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-mosque/20 transition-all hover:-translate-y-0.5 hover:bg-mosque/90 hover:shadow-lg dark:bg-hint-green dark:text-nordic"
+            >
+              <Plus size={16} />
+              Add New Property
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
@@ -210,7 +242,8 @@ export default async function DashboardPage({ searchParams }: Props) {
                   </div>
 
                   {/* Actions */}
-                  <div className="col-span-12 flex items-center justify-end gap-1 md:col-span-2">
+                  <div className="col-span-12 flex flex-wrap items-center justify-end gap-2 md:col-span-2">
+                    <FeaturedButton propertyId={property.id} isFeatured={property.isFeatured} />
                     <Link
                       href={`/properties/${property.slug}/edit`}
                       title="Edit property"
