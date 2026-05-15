@@ -1,4 +1,4 @@
-import { Building2, Bell, Heart } from "lucide-react";
+import { Building2, Bell, Heart, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { auth } from "@/auth";
@@ -66,6 +66,17 @@ export default async function Navbar() {
                 Coming soon
               </span>
             </div>
+
+            {/* Messages */}
+            {user && (
+              <Link
+                href="/messages"
+                aria-label="Messages"
+                className="hidden text-white/70 transition-colors hover:text-white md:block"
+              >
+                <MessageCircle size={19} />
+              </Link>
+            )}
 
             {/* Heart — favorites */}
             {user && (

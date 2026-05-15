@@ -8,9 +8,16 @@ import PropertyMapWrapper from "./PropertyMapWrapper";
 interface PropertyDetailProps {
   property: Property;
   isOwner?: boolean;
+  isLoggedIn?: boolean;
+  existingConversationId?: string;
 }
 
-export default function PropertyDetail({ property, isOwner }: PropertyDetailProps) {
+export default function PropertyDetail({
+  property,
+  isOwner,
+  isLoggedIn,
+  existingConversationId,
+}: PropertyDetailProps) {
   const isRent = property.priceType === "rent";
 
   const formattedPrice = isRent
@@ -135,6 +142,8 @@ export default function PropertyDetail({ property, isOwner }: PropertyDetailProp
             propertySlug={property.slug}
             propertyId={property.id}
             isOwner={isOwner}
+            isLoggedIn={isLoggedIn}
+            existingConversationId={existingConversationId}
           />
         </div>
       </div>

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Pencil, Trash2, MessageCircle } from "lucide-react";
 import { deletePropertyAction } from "@/server/actions/property.action";
+import { sendMessageAction } from "@/server/actions/message.action";
 import { notify } from "@/lib/toast";
 
 interface PropertyActionsProps {
@@ -12,6 +13,8 @@ interface PropertyActionsProps {
   propertySlug: string;
   propertyId: string;
   isOwner?: boolean;
+  isLoggedIn?: boolean;
+  existingConversationId?: string;
 }
 
 export default function PropertyActions({
@@ -19,10 +22,28 @@ export default function PropertyActions({
   propertySlug,
   propertyId,
   isOwner,
+  isLoggedIn,
+  existingConversationId,
 }: PropertyActionsProps) {
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isContacting, setIsContacting] = useState(false);
+
+  async function handleContact() {
+    setIsContacting(true);
+    if (existingConversationId) {
+      router.push(`/messages/${existingConversationId}`);
+      return;
+    }
+    const result = await sendMessageAction(propertyId, "");
+    setIsContacting(false);
+    if ("error" in result) {
+      notify.error(result.error);
+      return;
+    }
+    router.push(`/messages/${result.conversationId}`);
+  }
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -46,6 +67,17 @@ export default function PropertyActions({
         <Calendar size={16} />
         {isRent ? "Schedule a viewing" : "Schedule a visit"}
       </Link>
+
+      {isLoggedIn && !isOwner && (
+        <button
+          onClick={handleContact}
+          disabled={isContacting}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-nordic/20 bg-white px-6 py-3.5 text-sm font-semibold text-nordic transition-colors hover:bg-nordic/5 disabled:opacity-50 dark:border-white/10 dark:bg-transparent dark:text-clear-day dark:hover:bg-white/5"
+        >
+          <MessageCircle size={16} />
+          {isContacting ? "Opening chat…" : "Contact Owner"}
+        </button>
+      )}
 
       {isOwner && (
         <div className="flex gap-3">

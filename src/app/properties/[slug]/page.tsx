@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPropertyBySlug } from "@/server/services/property.service";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import Navbar from "@/components/sections/Navbar";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import type { Metadata } from "next";
@@ -41,18 +42,25 @@ export default async function PropertyPage({ params }: Props) {
   const isOwner =
     !!session?.user?.id && (session.user.id === property.userId || session.user.role === "admin");
 
-  console.log("DEBUG isOwner:", {
-    sessionUserId: session?.user?.id,
-    propertyUserId: property.userId,
-    role: session?.user?.role,
-    isOwner,
-  });
+  let existingConversationId: string | undefined;
+  if (session?.user?.id && !isOwner) {
+    const conv = await prisma.conversation.findUnique({
+      where: { propertyId_buyerId: { propertyId: property.id, buyerId: session.user.id } },
+      select: { id: true },
+    });
+    existingConversationId = conv?.id;
+  }
 
   return (
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <PropertyDetail property={property} isOwner={isOwner} />
+        <PropertyDetail
+          property={property}
+          isOwner={isOwner}
+          isLoggedIn={!!session?.user?.id}
+          existingConversationId={existingConversationId}
+        />
       </main>
     </>
   );
