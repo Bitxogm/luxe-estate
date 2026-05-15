@@ -22,11 +22,11 @@ export function ThemeToggle() {
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label="Toggle theme"
-      className="relative flex h-7 w-14 items-center rounded-full bg-white/10 p-1 transition-colors"
+      className="relative flex h-7 w-14 items-center justify-between rounded-full bg-white/10 p-1 transition-colors"
     >
       {/* sliding indicator */}
       <span
-        className={`absolute h-5 w-5 rounded-full bg-white transition-transform duration-300 ease-in-out ${
+        className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white transition-transform duration-300 ease-in-out ${
           isDark ? "translate-x-7" : "translate-x-0"
         }`}
       />

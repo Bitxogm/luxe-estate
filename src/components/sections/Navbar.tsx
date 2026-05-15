@@ -54,7 +54,7 @@ export default async function Navbar() {
             <NavbarSearch />
 
             {/* Bell — coming soon */}
-            <div className="group relative hidden md:block">
+            <div className="group relative hidden md:flex md:items-center">
               <button
                 aria-label="Notifications"
                 className="relative text-white/70 transition-colors hover:text-white"
