@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -32,6 +33,9 @@ export default function ConversationList({
   currentUserId,
   activeConversationId,
 }: Props) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="flex flex-col divide-y divide-nordic/10 bg-white/60 dark:divide-white/10 dark:bg-white/5">
       {conversations.map((c) => {
@@ -64,7 +68,7 @@ export default function ConversationList({
                 </p>
                 {lastMessage && (
                   <span className="flex-shrink-0 text-xs text-nordic/40 dark:text-white/40">
-                    {timeAgo(lastMessage.createdAt)}
+                    {mounted ? timeAgo(lastMessage.createdAt) : ""}
                   </span>
                 )}
               </div>

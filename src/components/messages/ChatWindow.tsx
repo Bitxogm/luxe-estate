@@ -119,6 +119,7 @@ export default function ChatWindow({
               >
                 <p className="leading-relaxed">{msg.content}</p>
                 <p
+                  suppressHydrationWarning
                   className={`mt-1 text-right text-[10px] ${
                     isOwn ? "text-white/60" : "text-nordic/50"
                   }`}

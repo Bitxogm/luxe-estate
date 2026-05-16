@@ -13,10 +13,10 @@ export default function PropertyCard({ property, isSaved = false }: PropertyCard
   const isRent = property.priceType === "rent";
 
   const formattedPrice = isRent
-    ? `$${property.price.toLocaleString("en-US")}`
-    : new Intl.NumberFormat("en-US", {
+    ? `${property.price.toLocaleString("es-ES")}€`
+    : new Intl.NumberFormat("es-ES", {
         style: "currency",
-        currency: "USD",
+        currency: "EUR",
         maximumFractionDigits: 0,
       }).format(property.price);
 

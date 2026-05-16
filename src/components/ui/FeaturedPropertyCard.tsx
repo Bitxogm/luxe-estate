@@ -13,9 +13,9 @@ export default function FeaturedPropertyCard({
   property,
   isSaved = false,
 }: FeaturedPropertyCardProps) {
-  const formattedPrice = new Intl.NumberFormat("en-US", {
+  const formattedPrice = new Intl.NumberFormat("es-ES", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
     maximumFractionDigits: 0,
   }).format(property.price);
 

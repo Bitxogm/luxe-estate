@@ -21,10 +21,10 @@ export default function PropertyDetail({
   const isRent = property.priceType === "rent";
 
   const formattedPrice = isRent
-    ? `$${property.price.toLocaleString("en-US")}/mo`
-    : new Intl.NumberFormat("en-US", {
+    ? `${property.price.toLocaleString("es-ES")}€/mo`
+    : new Intl.NumberFormat("es-ES", {
         style: "currency",
-        currency: "USD",
+        currency: "EUR",
         maximumFractionDigits: 0,
       }).format(property.price);
 

@@ -164,10 +164,10 @@ export default async function DashboardPage({ searchParams }: Props) {
               const isLast = idx === properties.length - 1;
               const formattedPrice =
                 property.priceType === "rent"
-                  ? `$${property.price.toLocaleString("en-US")}/mo`
-                  : new Intl.NumberFormat("en-US", {
+                  ? `${property.price.toLocaleString("es-ES")}€/mo`
+                  : new Intl.NumberFormat("es-ES", {
                       style: "currency",
-                      currency: "USD",
+                      currency: "EUR",
                       maximumFractionDigits: 0,
                     }).format(property.price);
 

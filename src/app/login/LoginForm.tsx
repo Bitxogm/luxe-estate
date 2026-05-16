@@ -12,8 +12,8 @@ import { notify } from "@/lib/toast";
 const IS_DEV = process.env.NODE_ENV === "development";
 
 const DEV_USERS = [
-  { label: "Dev User", email: "dev@luxe.com", password: "Dev12345" }, // nosec
-  { label: "Admin", email: "admin@luxe.com", password: "Admin12345" }, // nosec
+  { label: "Fill as Demo User", email: "demo@luxe.com", password: "Demo1234!" }, // nosec
+  { label: "Fill as Admin", email: "admin@luxe.com", password: "Admin1234!" }, // nosec
 ] as const;
 
 const schema = z.object({

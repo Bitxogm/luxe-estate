@@ -75,10 +75,16 @@ const schema = z.object({
   title: z.string().min(1, "Title is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  price: z.string().min(1, "Price is required"),
+  price: z
+    .string()
+    .min(1, "Price is required")
+    .refine((val) => Number(val) <= 99999999, "El precio máximo es 99.999.999"),
   priceType: z.enum(["sale", "rent"]),
   type: z.enum(["House", "Apartment", "Villa", "Penthouse"]),
-  sqm: z.string().min(1, "Area is required"),
+  sqm: z
+    .string()
+    .min(1, "Area is required")
+    .refine((val) => Number(val) <= 10000, "El tamaño máximo es 10.000 m²"),
   badge: z.string().optional(),
   description: z
     .string()
@@ -136,6 +142,15 @@ export default function NewPropertyForm({ property }: NewPropertyFormProps) {
   }
 
   async function onSubmit(values: FormValues) {
+    if (beds > 20) {
+      notify.error("El máximo de habitaciones es 20");
+      return;
+    }
+    if (baths > 20) {
+      notify.error("El máximo de baños es 20");
+      return;
+    }
+
     if (!imageUrl) {
       setImageUrlError("Please upload a main image");
       return;
