@@ -10,7 +10,9 @@ import { Shield, User, Building2 } from "lucide-react";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "User Directory — Luxe Estate Admin" };
+export const metadata: Metadata = {
+  title: "Admin Panel",
+};
 
 const LIMIT = 10;
 

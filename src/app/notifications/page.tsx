@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getNotificationsByUserId } from "@/server/repositories/notification.repository";
 import Navbar from "@/components/sections/Navbar";
 import NotificationsClient from "./NotificationsClient";
+
+export const metadata: Metadata = {
+  title: "Notifications",
+};
 
 export default async function NotificationsPage() {
   const session = await auth();

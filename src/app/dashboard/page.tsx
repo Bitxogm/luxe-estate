@@ -25,7 +25,10 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "My Dashboard — Luxe Estate" };
+export const metadata: Metadata = {
+  title: "My Dashboard",
+  description: "Manage your property listings on Luxe Estate",
+};
 
 const LIMIT = 8;
 

@@ -16,10 +16,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
     const property = await getPropertyBySlug(slug);
-    if (!property) return { title: "Property not found — Luxe Estate" };
+
+    if (!property) {
+      return { title: "Property not found" };
+    }
+
+    const title = property.title;
+    const description =
+      property.description ??
+      `${property.type} in ${property.city}. ${property.beds} beds, ${property.baths} baths, ${property.sqm}m². ${
+        property.priceType === "sale" ? "For sale" : "For rent"
+      } at ${property.price.toLocaleString("es-ES")}€`;
+
     return {
-      title: `${property.title} — Luxe Estate`,
-      description: `${property.type} in ${property.city}. ${property.beds} beds · ${property.baths} baths · ${property.sqm} m²`,
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: [
+          {
+            url: property.imageUrl,
+            width: 1200,
+            height: 630,
+            alt: property.imageAlt || property.title,
+          },
+        ],
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [property.imageUrl],
+      },
     };
   } catch {
     return { title: "Luxe Estate" };

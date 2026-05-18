@@ -8,7 +8,8 @@ import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your Favorites — Luxe Estate",
+  title: "Saved Properties",
+  description: "Your saved luxury properties on Luxe Estate",
 };
 
 export default async function FavoritesPage() {

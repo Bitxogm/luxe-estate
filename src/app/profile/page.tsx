@@ -10,7 +10,7 @@ import PaymentSuccessToast from "@/components/ui/PaymentSuccessToast";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "My Profile — Luxe Estate",
+  title: "My Profile",
 };
 
 interface Props {

@@ -4,7 +4,7 @@ import RegisterForm from "./RegisterForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Create account — Luxe Estate",
+  title: "Create Account",
 };
 
 export default async function RegisterPage() {

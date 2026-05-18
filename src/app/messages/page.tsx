@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getConversationsByUserId } from "@/server/repositories/message.repository";
 import Navbar from "@/components/sections/Navbar";
 import ConversationList from "@/components/messages/ConversationList";
 import { MessageCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Messages",
+};
 
 export default async function MessagesPage() {
   const session = await auth();
