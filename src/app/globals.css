@@ -19,3 +19,18 @@
     scrollbar-width: none;
   }
 }
+
+@keyframes slide-up {
+  from {
+    transform: translate(-50%, 100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

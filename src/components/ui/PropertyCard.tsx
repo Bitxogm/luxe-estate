@@ -3,6 +3,7 @@ import { Bath, BedDouble, Ruler } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import SaveButton from "@/components/ui/SaveButton";
+import CompareButton from "@/components/ui/CompareButton";
 
 interface PropertyCardProps {
   property: Property;
@@ -30,6 +31,10 @@ export default function PropertyCard({ property, isSaved = false }: PropertyCard
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+          <CompareButton
+            property={property}
+            className="absolute right-14 top-3 z-10 rounded-full p-2 transition-colors"
           />
           <SaveButton
             propertyId={property.id}

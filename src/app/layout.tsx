@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import SessionProvider from "@/components/SessionProvider";
 import Footer from "@/components/sections/Footer";
+import { CompareProvider } from "@/lib/compare-context";
+import CompareBar from "@/components/ui/CompareBar";
 
 export const metadata: Metadata = {
   title: "Luxe Estate — Premium Real Estate",
@@ -15,11 +17,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="bg-clear-day font-sf text-nordic antialiased transition-colors duration-300 selection:bg-mosque selection:text-white dark:bg-nordic dark:text-clear-day">
         <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-            <Footer />
-            <Toaster position="bottom-right" richColors closeButton />
-          </ThemeProvider>
+          <CompareProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+              <Footer />
+              <CompareBar />
+              <Toaster position="bottom-right" richColors closeButton />
+            </ThemeProvider>
+          </CompareProvider>
         </SessionProvider>
       </body>
     </html>
