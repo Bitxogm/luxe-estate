@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getPropertyBySlug } from "@/server/services/property.service";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getReviewsByPropertyId } from "@/server/repositories/review.repository";
 import Navbar from "@/components/sections/Navbar";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import type { Metadata } from "next";
@@ -39,8 +40,7 @@ export default async function PropertyPage({ params }: Props) {
   if (!property) notFound();
 
   const session = await auth();
-  const isOwner =
-    !!session?.user?.id && (session.user.id === property.userId || session.user.role === "admin");
+  const isOwner = !!session?.user?.id && session.user.id === property.userId;
 
   let existingConversationId: string | undefined;
   if (session?.user?.id && !isOwner) {
@@ -51,6 +51,10 @@ export default async function PropertyPage({ params }: Props) {
     existingConversationId = conv?.id;
   }
 
+  const { reviews, averageRating } = await getReviewsByPropertyId(property.id);
+  const isAdmin = session?.user?.role === "admin";
+  const currentUserId = session?.user?.id;
+
   return (
     <>
       <Navbar />
@@ -60,6 +64,10 @@ export default async function PropertyPage({ params }: Props) {
           isOwner={isOwner}
           isLoggedIn={!!session?.user?.id}
           existingConversationId={existingConversationId}
+          reviews={reviews}
+          averageRating={averageRating}
+          currentUserId={currentUserId}
+          isAdmin={isAdmin}
         />
       </main>
     </>

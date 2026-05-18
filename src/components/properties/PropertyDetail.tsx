@@ -4,12 +4,17 @@ import { Bath, BedDouble, Ruler, MapPin, ArrowLeft } from "lucide-react";
 import PropertyActions from "./PropertyActions";
 import PropertyGallery from "./PropertyGallery";
 import PropertyMapWrapper from "./PropertyMapWrapper";
+import ReviewSection, { type ReviewWithUser } from "./ReviewSection";
 
 interface PropertyDetailProps {
   property: Property;
   isOwner?: boolean;
   isLoggedIn?: boolean;
   existingConversationId?: string;
+  reviews?: ReviewWithUser[];
+  averageRating?: number;
+  currentUserId?: string;
+  isAdmin?: boolean;
 }
 
 export default function PropertyDetail({
@@ -17,6 +22,10 @@ export default function PropertyDetail({
   isOwner,
   isLoggedIn,
   existingConversationId,
+  reviews = [],
+  averageRating = 0,
+  currentUserId,
+  isAdmin = false,
 }: PropertyDetailProps) {
   const isRent = property.priceType === "rent";
 
@@ -147,6 +156,15 @@ export default function PropertyDetail({
           />
         </div>
       </div>
+
+      <ReviewSection
+        propertyId={property.id}
+        reviews={reviews}
+        averageRating={averageRating}
+        currentUserId={currentUserId}
+        isOwner={!!isOwner}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }
