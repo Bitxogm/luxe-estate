@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { pusherServer } from "@/lib/pusher";
+import { createNotificationAction } from "./notification.action";
 
 type SendMessageResult = { conversationId: string } | { error: string };
 
@@ -18,7 +19,7 @@ export async function sendMessageAction(
 
   const property = await prisma.property.findUnique({
     where: { id: propertyId },
-    select: { userId: true },
+    select: { userId: true, title: true },
   });
 
   if (!property?.userId) return { error: "Property not found" };
@@ -47,6 +48,17 @@ export async function sendMessageAction(
     senderName: message.sender.name ?? "User",
     createdAt: message.createdAt.toISOString(),
   });
+
+  // Trigger notification to the conversation receiver (owner)
+  const senderName = message.sender.name || "A user";
+  const propertyTitle = property.title;
+  await createNotificationAction(
+    ownerId,
+    "message",
+    "New message",
+    `${senderName} sent you a message about ${propertyTitle}`,
+    `/messages/${conversation.id}`
+  );
 
   revalidatePath("/messages");
 

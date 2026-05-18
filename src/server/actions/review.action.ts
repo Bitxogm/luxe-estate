@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotificationAction } from "./notification.action";
 
 export async function createReviewAction(propertyId: string, rating: number, comment: string) {
   const session = await auth();
@@ -23,7 +24,7 @@ export async function createReviewAction(propertyId: string, rating: number, com
 
   const property = await prisma.property.findUnique({
     where: { id: propertyId },
-    select: { userId: true, slug: true },
+    select: { userId: true, slug: true, title: true },
   });
 
   if (!property) {
@@ -52,6 +53,18 @@ export async function createReviewAction(propertyId: string, rating: number, com
       comment: trimmedComment,
     },
   });
+
+  if (property.userId) {
+    const userName = session.user.name || "A user";
+    const propertyTitle = property.title;
+    await createNotificationAction(
+      property.userId,
+      "review",
+      "New review",
+      `${userName} left a ${rating}★ review on ${propertyTitle}`,
+      `/properties/${property.slug}`
+    );
+  }
 
   revalidatePath(`/properties/${property.slug}`);
 

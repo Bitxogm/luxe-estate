@@ -1,14 +1,20 @@
-import { Building2, Bell, Heart, MessageCircle } from "lucide-react";
+import { Building2, Heart, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { auth } from "@/auth";
 import NavbarUserMenu from "./NavbarUserMenu";
 import NavbarSearch from "./NavbarSearch";
 import MobileDrawer from "./MobileDrawer";
+import { getNotificationsByUserId } from "@/server/repositories/notification.repository";
+import NotificationBell from "./NotificationBell";
 
 export default async function Navbar() {
   const session = await auth();
   const user = session?.user ?? null;
+
+  const { notifications, unreadCount } = user
+    ? await getNotificationsByUserId(user.id)
+    : { notifications: [], unreadCount: 0 };
 
   return (
     <nav className="sticky top-0 z-50 bg-nordic">
@@ -53,19 +59,13 @@ export default async function Navbar() {
             {/* Search */}
             <NavbarSearch />
 
-            {/* Bell — coming soon */}
-            <div className="group relative hidden md:flex md:items-center">
-              <button
-                aria-label="Notifications"
-                className="relative text-white/70 transition-colors hover:text-white"
-              >
-                <Bell size={19} />
-                <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-hint-green" />
-              </button>
-              <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/10 px-2 py-1 text-xs text-white/80 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-                Coming soon
-              </span>
-            </div>
+            {/* Bell */}
+            {user && (
+              <NotificationBell
+                initialNotifications={notifications}
+                initialUnreadCount={unreadCount}
+              />
+            )}
 
             {/* Messages */}
             {user && (

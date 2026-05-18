@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/auth";
 import * as repo from "@/server/repositories/visit.repository";
+import { prisma } from "@/lib/prisma";
+import { createNotificationAction } from "./notification.action";
 
 const scheduleSchema = z.object({
   propertyId: z.string().min(1),
@@ -43,6 +45,23 @@ export async function scheduleVisit(
     scheduledAt,
     message: message || undefined,
   });
+
+  const property = await prisma.property.findUnique({
+    where: { id: propertyId },
+    select: { userId: true, title: true },
+  });
+
+  if (property?.userId) {
+    const userName = session.user.name || "A user";
+    const propertyTitle = property.title;
+    await createNotificationAction(
+      property.userId,
+      "visit",
+      "New visit request",
+      `${userName} wants to visit ${propertyTitle}`,
+      "/dashboard"
+    );
+  }
 
   redirect(`/properties/${propertySlug}?visited=1`);
 }

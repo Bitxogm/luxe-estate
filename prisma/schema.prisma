@@ -36,6 +36,7 @@ model User {
   messagesSent          Message[]
   payments              Payment[]
   reviews               Review[]
+  notifications         Notification[]
 }
 
 model Account {
@@ -186,3 +187,16 @@ model Review {
   user       User     @relation(fields: [userId], references: [id])
   @@unique([propertyId, userId]) // un review por usuario por propiedad
 }
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "message" | "visit" | "review" | "price_drop"
+  title     String
+  body      String
+  href      String   // URL a donde navegar al hacer click
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
